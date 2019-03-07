@@ -1,0 +1,20 @@
+{
+  "name": "gang/webcomponents",
+  "description": "A server-side implementation of web components",
+  "type": "library",
+  "authors": [
+    {
+      "name": "Habitissimo",
+      "email": "opensource@habitissimo.com"
+    }
+  ],
+  "require": {
+    "twig/twig": "2.4.4"
+  },
+  "autoload": {
+    "psr-4" : {
+      "Gang\\WebComponents\\" : "src/",
+      "Gang\\WebComponentsTests\\" : "tests/"
+    }
+  }
+}
