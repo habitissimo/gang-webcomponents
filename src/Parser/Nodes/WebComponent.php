@@ -18,7 +18,8 @@ class WebComponent implements NodeInterface
     private $name;
     private $attributes = [];
     private $innerHtml = '';
-    private $webComponentChilds = [];
+    private $originalInnerHtml = '';
+    private $children = [];
 
     public function __construct(string $outerHtml, string $name, array $attrs)
     {
@@ -26,6 +27,7 @@ class WebComponent implements NodeInterface
         $this->name = $name;
         $this->attributes = $attrs;
         $this->innerHtml = InnerHTMLExtractor::extract($outerHtml,$name);
+        $this->originalInnerHtml = $this->innerHtml;
         $this->createChildren();
     }
 
@@ -76,20 +78,32 @@ class WebComponent implements NodeInterface
         return $this->innerHtml;
     }
 
-    public function getWebComponentChildren() : array
+    public function setInnerHtml($value) : void
     {
-        return $this->webComponentChilds;
+        $this->innerHtml = $value;
+    }
+
+    public function getOriginalInnerHtml() : string
+    {
+        return $this->originalInnerHtml;
+    }
+
+    public function setOriginalInnerHtml($value) : void
+    {
+        $this->originalInnerHtml = $value;
+    }
+
+    public function getChildren() : array
+    {
+        return $this->children;
     }
 
     private function createChildren() : void
     {
-        //dump("Creating children of ".$this);
         $parser = new Parser();
         $elements = $parser->parse($this->innerHtml);
         foreach ($elements as $element) {
-            if ($element instanceof WebComponent) {
-                $this->webComponentChilds[] = $element;
-            }
+            $this->children[] = $element;
         }
     }
 

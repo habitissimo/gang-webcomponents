@@ -57,7 +57,7 @@ final class WebComponentTests extends TestCase
                 </Button>';
         $this->assertEquals(
             new WebComponent('<A href="gugal"></A>', 'A', ['href'=>"gugal"]),
-            WebComponent::create($tag, 'Button', [])->getWebComponentChildren()[0]
+            WebComponent::create($tag, 'Button', [])->getChildren()[0]
         );
     }
 
@@ -93,7 +93,7 @@ final class WebComponentTests extends TestCase
                 </Button>';
         $this->assertEquals(
             WebComponent::create($childWc, 'Icon', ['src'=>"www.google.com"]),
-            WebComponent::create($tag, 'Button', [])->getWebComponentChildren()[0]
+            WebComponent::create($tag, 'Button', [])->getChildren()[0]
         );
     }
 

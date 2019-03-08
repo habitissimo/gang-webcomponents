@@ -53,7 +53,7 @@ class HTMLComponentFactoryTest extends TestCase
         $button->id="habitissimo";
         $button->setInnerHTML("Habitissimo");
 
-        $this->webcomponent->getWebComponentChildren()->willReturn([]);
+        $this->webcomponent->getChildren()->willReturn([]);
         $this->webcomponent->getTagName()->willReturn('Button');
         $this->webcomponent->getAttr()->willReturn(['id'=>'habitissimo']);
         $this->webcomponent->getInnerHtml()->willReturn('Habitissimo');
@@ -70,7 +70,7 @@ class HTMLComponentFactoryTest extends TestCase
         $input = new ProtectedAttrsComponent();
         $input->setId("testing-input");
 
-        $this->webcomponent->getWebComponentChildren()->willReturn([]);
+        $this->webcomponent->getChildren()->willReturn([]);
         $this->webcomponent->getTagName()->willReturn('InputText');
         $this->webcomponent->getAttr()->willReturn(['id'=>"testing-input"]);
         $this->webcomponent->getInnerHtml()->willReturn("");
@@ -84,7 +84,7 @@ class HTMLComponentFactoryTest extends TestCase
 
     public function testPreRender() : void
     {
-        $this->webcomponent->getWebComponentChildren()->willReturn([]);
+        $this->webcomponent->getChildren()->willReturn([]);
         $this->webcomponent->getTagName()->willReturn('TagName');
         $this->webcomponent->getAttr()->willReturn([]);
         $this->webcomponent->getInnerHtml()->willReturn("");

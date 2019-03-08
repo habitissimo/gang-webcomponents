@@ -2,6 +2,9 @@
 declare(strict_types=1);
 namespace Gang\WebComponents\Parser\Nodes;
 
+use Gang\WebComponents\Contracts\NodeInterface;
+
+
 /**
  * Class Fragment: this class extends Text because it have the same behaviour
  * but because we want to keep the context of where a the Text token is use
@@ -11,7 +14,17 @@ namespace Gang\WebComponents\Parser\Nodes;
  *
  * @package Gang\WebComponents\Parser\Nodes
  */
-class Fragment extends Text
+class Fragment implements NodeInterface
 {
     private $value;
+
+    public function __construct(string $value)
+    {
+        $this->value = $value;
+    }
+
+    public function __toString() : string
+    {
+        return $this->value;
+    }
 }

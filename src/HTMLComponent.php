@@ -5,32 +5,37 @@ namespace Gang\WebComponents;
 use Gang\WebComponents\Exceptions\ComponentAttributeNotFound;
 use Gang\WebComponents\Helpers\Str;
 use Gang\WebComponents\Logger\WebComponentLogger as Log;
+use Gang\WebComponents\Parser\Nodes\WebComponent;
 
 abstract class HTMLComponent
 {
     protected $template;
-    public $children; // contains innerHTML. It is maintained this way for retrocompatibility of the templates
-    public $webcomponent_children = []; // parsed webcomponent children.
-    public $className;
     protected $required_fields = [];
     protected $attributes = [];
+    protected $childNodes = [];
+    protected $webComponent;
+
+    public $innerHtml;
+    public $className;
 
     public function __set($name, $value) : void
     {
-        $method_name = 'set' . ucfirst($name);
-
-        if (method_exists($this, $method_name)) {
-            $this->{$method_name}($value);
-            return;
+        if ($this->setterExists($name)) {
+          $this->setWithSetter($name, $value);
+          return;
         }
 
         $attr_name = Str::snake($name);
         $this->{$attr_name} = $value;
-        return;
 
-        Log::error("Component ".$this->getClassName()." has no public attribute $name ".
-            " nor public method set".ucfirst($name));
+        return; // TODO: should we keep the validation here?
+
         throw new ComponentAttributeNotFound($name, $this->getClassName());
+    }
+
+    public function setWebComponent(WebComponent $webComponent)
+    {
+      $this->webComponent = $webComponent;
     }
 
     public function getClassName()
@@ -38,27 +43,39 @@ abstract class HTMLComponent
         return self::__CLASS__;
     }
 
-    public function setInnerHTML(string $html)
+    public function setInnerHtml(string $html)
     {
-        $this->children = $html;
+        $this->innerHtml = $html;
     }
 
     public function getInnerHTML() : string
     {
-        return $this->children ?? "";
+        return $this->innerHtml ?? "";
     }
 
-    public function addWebComponentChild($child)
+    public function addChild($child)
     {
-        $this->webcomponent_children[] = $child;
-    }
-
-    public function getWebComponentChildren() : array
-    {
-        return $this->webcomponent_children;
+        $this->childNodes[] = $child;
     }
 
     public function preRender() : void
     {
+        return;
+    }
+
+    private function setterExists($attrName)
+    {
+        return method_exists($this, $this->getSetterName($attrName));
+    }
+
+    private function getSetterName($attrName)
+    {
+        return 'set' . ucfirst($attrName);
+    }
+
+    private function setWithSetter($attrName, $value)
+    {
+        $setter = $this->getSetterName($attrName);
+        $this->$setter($value);
     }
 }

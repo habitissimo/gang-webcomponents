@@ -24,6 +24,7 @@ class Renderer
     {
         $fileContent = $this->templateFinder->find($htmlComponent);
         $context = get_object_vars($htmlComponent);
+        $context['children'] = $context['innerHtml'];
         // In case that the content it couldn't be render return an empty string
         // So the HTML dosen't add anything
 
