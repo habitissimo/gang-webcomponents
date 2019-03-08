@@ -34,7 +34,6 @@ class Renderer
 
         $rendered = $this->templateRender->render($fileContent, $context);
 
-        return $rendered;
         return $this->postRender($rendered, $htmlComponent);
     }
 
@@ -48,19 +47,18 @@ class Renderer
             $element->setAttribute('class', $component->className);
         }
 
-        foreach ($element->attributes as $attr) {
-            if (strpos('data-', $attr->name) === 0) {
-                $this->appendAttributeValues($element, $attr->name, $component);
-            }
+        /*
+        if ($component->id && empty($element->getAttribute("id"))) {
+            $element->setAttribute('id', $component->id);
+        }
+        */
+
+        foreach ($component->dataAttributes->toArray() as $name => $value) {
+          if (empty($element->getAttribute($name))) {
+              $element->setAttribute($name, $value);
+          }
         }
 
         return $dom->saveHtml($element);
-    }
-
-    private function appendAttributeValues($domElement, $name, $component)
-    {
-        $current_value = $domElement->getAttribute($name);
-        $desired_value = trim("{$current_value} {$component->$name}");
-        $domElement->setAttribute($name, $desired_value);
     }
 }

@@ -15,11 +15,22 @@ abstract class HTMLComponent
     protected $childNodes = [];
     protected $webComponent;
 
+    public $dataAttributes;
     public $innerHtml;
     public $className;
 
+    public function __construct()
+    {
+      $this->dataAttributes = new AttributeHolder();
+    }
+
     public function __set($name, $value) : void
     {
+        if ($this->isDataAttribute($name)) {
+          $this->dataAttributes->add($name, $value);
+          return;
+        }
+
         if ($this->setterExists($name)) {
           $this->setWithSetter($name, $value);
           return;
@@ -77,5 +88,10 @@ abstract class HTMLComponent
     {
         $setter = $this->getSetterName($attrName);
         $this->$setter($value);
+    }
+
+    private function isDataAttribute($attrName)
+    {
+      return strpos($attrName, "data-") === 0;
     }
 }
