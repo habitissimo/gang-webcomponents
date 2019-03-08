@@ -7,6 +7,7 @@ use Gang\WebComponents\Contracts\NodeInterface;
 use Gang\WebComponents\Exceptions\ParserException;
 use Gang\WebComponents\Parser\InnerHTMLExtractor;
 use Gang\WebComponents\Parser\Parser;
+use Gang\WebComponents\Helpers\Dom;
 
 /**
  * Class WebComponent
@@ -41,11 +42,6 @@ class WebComponent implements NodeInterface
         return $this->outerHtml;
     }
 
-    private function setRoot(\DOMDocument $xml)
-    {
-        $this->root = $xml->documentElement;
-    }
-
     public function getAttr()
     {
         return $this->attributes;
@@ -54,15 +50,11 @@ class WebComponent implements NodeInterface
     private function extractInnerHtml(string $outerHtml): string
     {
         $innerHTML = '';
-        set_error_handler([WebComponent::class, 'handleXmlError']);
-        $dom = new \DOMDocument();
-        libxml_use_internal_errors(true);
-        $dom->loadHtml(mb_convert_encoding($outerHtml,'HTML-ENTITIES','UTF-8'));
-        libxml_use_internal_errors(false);
-        restore_error_handler();
-        $self = $dom->childNodes[1]->childNodes[0]->childNodes[0];
+
+        $dom = Dom::create();
+        $self = Dom::elementFromString($dom, $outerHtml);
         foreach ($self->childNodes as $child) {
-            $innerHTML .= $child->ownerDocument->saveXML($child);
+            $innerHTML .= Dom::elementToString($dom, $child);
         }
 
         return $innerHTML;

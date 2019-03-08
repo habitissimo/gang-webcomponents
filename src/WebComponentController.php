@@ -39,7 +39,7 @@ class WebComponentController
         $rendered_content = '';
         foreach ($this->parser->parse($content) as $token) {
             if ($token instanceof WebComponent) {
-                $rendered_content .= $this->renderer->render($token);
+                $rendered_content .= $this->process($this->renderer->render($token));
             } else {
                 $fragment = substr($token->__toString(), 0, 10) . (strlen($token->__toString())>10?"...":'');
                 Log::debug("[Controller@process] Processing parsed token $fragment as non WebComponent");

@@ -6,6 +6,7 @@ use Gang\WebComponents\Contracts\TemplateRendererInterface;
 use Gang\WebComponents\HTMLComponent;
 use Gang\WebComponents\ComponentLibrary;
 use Gang\WebComponents\TemplateFinder;
+use Gang\WebComponents\Helpers\Dom;
 
 class Renderer
 {
@@ -39,9 +40,8 @@ class Renderer
 
     private function postRender(string $rendered, HTMLComponent $component)
     {
-        $dom = new \DOMDocument();
-        $dom->loadHtml($rendered);
-        $element = $dom->childNodes[1]->firstChild->firstChild;
+        $dom = Dom::create();
+        $element = Dom::elementFromString($dom, $rendered);
 
         if ($component->className && empty($element->getAttribute("class"))) {
             $element->setAttribute('class', $component->className);
@@ -53,12 +53,14 @@ class Renderer
         }
         */
 
-        foreach ($component->dataAttributes->toArray() as $name => $value) {
-          if (empty($element->getAttribute($name))) {
-              $element->setAttribute($name, $value);
+        if (null !== $component->dataAttributes) {
+          foreach ($component->dataAttributes->toArray() as $name => $value) {
+            if (empty($element->getAttribute($name))) {
+                $element->setAttribute($name, $value);
+            }
           }
         }
 
-        return $dom->saveHtml($element);
+        return Dom::elementToString($dom, $element);
     }
 }

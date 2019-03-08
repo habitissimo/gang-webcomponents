@@ -5,6 +5,7 @@ namespace Gang\WebComponents\Parser;
 use Gang\WebComponents\Parser\Exception\InvalidXml;
 use Gang\WebComponents\Parser\Exception\NotImplementedHandler;
 use Gang\WebComponents\Parser\Exception\UnhandledXmlEntity;
+use Gang\WebComponents\Helpers\Dom;
 
 class XmlAttrExtractor
 {
@@ -14,7 +15,7 @@ class XmlAttrExtractor
 
   public function __construct()
   {
-    $this->dom = new \DOMDocument();
+    $this->dom = Dom::create();
   }
 
   private function start($parser, $name, $attrs): void
@@ -32,13 +33,7 @@ class XmlAttrExtractor
   {
     $this->name = null;
 
-    libxml_use_internal_errors(true); // supress malformed html warnings
-    $this->dom->loadHtml(utf8_decode($node));
-    libxml_use_internal_errors(false); // restore normal behavior
-
-    $this->dom->substituteEntities = false;
-
-    $element = $this->dom->childNodes[1]->childNodes[0]->childNodes[0];
+    $element = Dom::elementFromString($this->dom, $node);
 
     $this->name = $this->extractNamePreservingCase($node);
     $this->attrs = $this->getDomNodeAttrs($element);
