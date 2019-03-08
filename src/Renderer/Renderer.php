@@ -40,10 +40,8 @@ class Renderer
     private function postRender(string $rendered, HTMLComponent $component)
     {
         $dom = new \DOMDocument();
-        //$dom->loadXml($rendered);
-        //$element = $dom->firstChild;
-        //$dom->loadHtml($rendered);
-        //$element = $dom->childNodes[1]->firstChild;
+        $dom->loadHtml($rendered);
+        $element = $dom->childNodes[1]->firstChild->firstChild;
 
         if ($component->className && empty($element->getAttribute("class"))) {
             $element->setAttribute('class', $component->className);
