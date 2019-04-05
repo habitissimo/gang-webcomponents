@@ -10,6 +10,7 @@ use Gang\WebComponents\Logger\WebComponentLogger as Log;
 
 class TemplateFinder
 {
+   
     private $lib;
     private $templateRender;
 
@@ -28,34 +29,23 @@ class TemplateFinder
         // Defaults
         $className = File::getClassFromNameSpace(get_class($component));
         $fileContent = ComponentLibrary::CONTENT_NOT_RENDERABLE;
-        $filePath = $this->lib
-            ->getComponentPath(
-                $className,
-                $this->templateRender->getFileExtension()
-            );
+
+        $fileExtension = $this->templateRender->getFileExtension();
+
+        $filePath = $this->lib->getComponentPath($className, $fileExtension);
+
         // Core
         try {
             // Tries to find the Template of the component by convention
-            $fileContent = $this->lib
-                ->getTemplateContent(
-                    $className,
-                    $this->templateRender->getFileExtension()
-                );
+            $fileContent = $this->lib->getTemplateContent($className, $fileExtension);
         } catch (TemplateFileNotFound $templateEx) {
             Log::error('[Renderer@render] TemplateFileNotFound - CONTENT_NOT_RENDERABLE' . $templateEx);
             if ($component instanceof TemplateFolderInterface) {
-                $fileContent = $this->lib
-                    ->getTemplateContent(
-                        $className,
-                        $this->templateRender->getFileExtension(),
-                        $component->getTemplate()
-                    );
-                $filePath = $this->lib
-                    ->getComponentPath(
-                        $className,
-                        $this->templateRender->getFileExtension(),
-                        $component->getTemplate()
-                    );
+                $fileContent = $this->lib->getTemplateContent(
+                    $className, $fileExtension, $component->getTemplate());
+
+                $filePath = $this->lib->getComponentPath(
+                    $className, $fileExtension, $component->getTemplate());
             }
         }
         // update the library with the template folder and content

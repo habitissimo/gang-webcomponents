@@ -19,9 +19,7 @@ class HTMLComponentFactory
         $class = $this->library->getComponentClass($wc->getTagName());
 
         $component = new $class();
-
         $component->setWebComponent($wc);
-
         foreach ($wc->getAttr() as $attr_name => $value) {
             $component->__set($attr_name, $value);
         }

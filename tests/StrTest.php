@@ -25,6 +25,7 @@ class StrTest extends TestCase
     public function testCamel()
     {
         $this->assertEquals('snake_case', Str::snake('snakeCase'));
+        $this->assertEquals('class_name', Str::snake('className'));
     }
 
     public function testAlreadySnake()

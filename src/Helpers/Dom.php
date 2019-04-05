@@ -13,15 +13,24 @@ class Dom
     {
         libxml_use_internal_errors(true); // supress malformed html warnings
         $dom->substituteEntities = false;
-        $dom->loadHtml(utf8_decode($html));
+        $dom->loadHtml(utf8_decode($html), LIBXML_HTML_NOIMPLIED | LIBXML_NONET);
         libxml_clear_errors();
         libxml_use_internal_errors(false); // restore normal behavior
+        return $dom->childNodes[1];
+    }
 
-        return $dom->childNodes[1]->firstChild->firstChild;
+    public static function xmlFromString(\DOMDocument $dom, string $html)
+    {
+      libxml_use_internal_errors(true); // supress malformed html warnings
+      $dom->substituteEntities = false;
+      $dom->loadXml(utf8_decode($html), LIBXML_NONET);
+      libxml_clear_errors();
+      libxml_use_internal_errors(false); // restore normal behavior
+      return $dom->firstChild;
     }
 
     public static function elementToString(\DOMDocument $dom, $element)
     {
-      return $dom->saveHtml($element);
+      return str_replace("\n","",$dom->saveHtml($element));
     }
 }

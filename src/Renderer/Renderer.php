@@ -25,16 +25,19 @@ class Renderer
     {
         $fileContent = $this->templateFinder->find($htmlComponent);
         $context = get_object_vars($htmlComponent);
+
         $context['children'] = $context['innerHtml'];
+
+        $context['className'] = $context['classname'];
+
+
         // In case that the content it couldn't be render return an empty string
         // So the HTML dosen't add anything
 
         if ($fileContent === componentLibrary::CONTENT_NOT_RENDERABLE) {
             return "";
         }
-
         $rendered = $this->templateRender->render($fileContent, $context);
-
         return $this->postRender($rendered, $htmlComponent);
     }
 
@@ -43,8 +46,9 @@ class Renderer
         $dom = Dom::create();
         $element = Dom::elementFromString($dom, $rendered);
 
-        if ($component->className && empty($element->getAttribute("class"))) {
-            $element->setAttribute('class', $component->className);
+        $className = $component->className ?? $component->classname;
+        if ($className && empty($element->getAttribute("class"))) {
+            $element->setAttribute('class', $className);
         }
 
         /*

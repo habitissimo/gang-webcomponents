@@ -20,9 +20,8 @@ class InnerHTMLExtractor
         } else {
             throw new ParserException($tagName . " tag not found in " . $outerHtml, $tagName);
         }
-        return $innerHTML;
+        return trim($innerHTML);
     }
-
 
     private static function getOpeningTagEndPosition(array $matching_tags) : int
     {

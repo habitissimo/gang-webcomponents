@@ -112,6 +112,14 @@ class XmlAttrExtractorTest extends TestCase
         $this->assertEquals(["title" => 'Menú'], $x->getAttrs());
     }
 
+    /** @test */
+    public function should_preserve_casing() : void
+    {
+      $this->markTestSkipped("needs something else than DOMDocument from php");
+      $x = $this->x->with("<Button className='foo'></Button>");
+      //$this->assertEquals(["className" => 'foo'], $x->getAttrs());
+    }
+
     /**
      * @test
      * @expectedException \Gang\WebComponents\Parser\Exception\UnhandledXmlEntity

@@ -9,6 +9,7 @@ use Gang\WebComponents\Parser\Nodes\WebComponent;
 use Gang\WebComponents\Renderer\TwigTemplateRenderer;
 use Gang\WebComponents\HTMLComponentFactory;
 use Gang\WebComponents\Contracts\NodeInterface;
+use rg\tools\phpnsc\ConsoleOutput;
 
 class TreeRenderer
 {
@@ -23,7 +24,8 @@ class TreeRenderer
   public function render(WebComponent $component)
   {
     $this->postOrderTraverse($component);
-    $rendered = $this->renderer->render($this->factory->create($component));
+    $htmlCOmponent = $this->factory->create($component);
+    $rendered = $this->renderer->render($htmlCOmponent);
     return $rendered;
   }
 
@@ -35,11 +37,12 @@ class TreeRenderer
   private function postOrderTraverse(WebComponent $component)
   {
     $buffer = $this->getBuffer($component);
-
+    
     foreach ($component->getChildren() as $child) {
       if ($child instanceof WebComponent) {
         $this->postOrderTraverse($child);
         $html_component = $this->factory->create($child);
+
         $buffer->append($this->renderer->render($html_component));
       } else {
         $buffer->append((string) $child);

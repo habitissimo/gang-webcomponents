@@ -12,6 +12,9 @@ class File
     public static function getClassFromNameSpace(string $nameSpace) : string
     {
         $t = strrpos($nameSpace, '\\');
+        if(!$t){
+            return $nameSpace;
+        }
         return substr($nameSpace, $t + 1);
     }
 

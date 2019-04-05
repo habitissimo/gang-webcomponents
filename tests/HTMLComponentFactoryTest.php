@@ -39,12 +39,14 @@ class HTMLComponentFactoryTest extends TestCase
     private $prophet;
     private $library;
     private $webcomponent;
+ 
 
     public function setUp()
     {
         $this->prophet = new Prophet();
         $this->library = $this->prophet->prophesize(ComponentLibrary::class);
         $this->webcomponent = $this->prophet->prophesize(WebComponent::class);
+
     }
 
     public function testPublicAttrComponent() : void
@@ -58,11 +60,14 @@ class HTMLComponentFactoryTest extends TestCase
         $this->webcomponent->getAttr()->willReturn(['id'=>'habitissimo']);
         $this->webcomponent->getInnerHtml()->willReturn('Habitissimo');
 
+        $button->setWebComponent($this->webcomponent->reveal());
+        
         $this->library->getComponentClass("Button")
             ->willReturn(PublicAttrsComponent::class);
         $factory = new HTMLComponentFactory($this->library->reveal());
+        $HtmlComponent = $factory->create($this->webcomponent->reveal());
+        $this->assertEquals($button, $HtmlComponent);
 
-        $this->assertEquals($button, $factory->create($this->webcomponent->reveal()));
     }
 
     public function testProtectedAttrComponent() : void
@@ -74,6 +79,8 @@ class HTMLComponentFactoryTest extends TestCase
         $this->webcomponent->getTagName()->willReturn('InputText');
         $this->webcomponent->getAttr()->willReturn(['id'=>"testing-input"]);
         $this->webcomponent->getInnerHtml()->willReturn("");
+
+        $input->setWebComponent($this->webcomponent->reveal());
 
         $this->library->getComponentClass('InputText')
             ->willReturn(ProtectedAttrsComponent::class);

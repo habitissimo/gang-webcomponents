@@ -3,14 +3,17 @@ declare(strict_types=1);
 
 namespace Gang\WebComponentsTests;
 
+use Gang\WebComponents\Parser\Nodes\WebComponent;
 use Gang\WebComponents\Renderer\Renderer;
-use Gang\WebComponents\Tests\WebComponents\Button\ShareSocial\TwitterShareSocialButton;
-use Gang\WebComponents\Tests\WebComponents\Button\Button;
+use Gang\WebComponentsTests\WebComponents\Button\ShareSocial\TwitterShareSocialButton;
+use Gang\WebComponentsTests\WebComponents\Button\Button;
 use PHPUnit\Framework\TestCase;
 use Gang\WebComponents\Contracts\TemplateRendererInterface;
 use Gang\WebComponents\ComponentLibrary;
 use Prophecy\Prophet;
 use Prophecy\Argument;
+use Gang\WebComponents\Renderer\TwigTemplateRenderer;
+use Gang\WebComponents\HTMLComponent;
 
 class RendererTest extends TestCase
 {
@@ -21,6 +24,7 @@ class RendererTest extends TestCase
 
     public function setUp(): void
     {
+        
         $this->prophet = new Prophet;
         $this->componentLibrary = $this->prophet->prophesize(ComponentLibrary::class);
         $this->templateRenderer = $this->prophet->prophesize(TemplateRendererInterface::class);
@@ -29,62 +33,58 @@ class RendererTest extends TestCase
 
     public function testRenderComponent(): void
     {
-        $button = new Button();
-        $button->href = "www.habitissimo.com";
+        $buttonComponentClass = new class() extends HtmlComponent {};
+        $button = new $buttonComponentClass();
+        $className = get_class($button);
         $this->componentLibrary
-            ->getTemplateContent("Button", ".twig")
-            ->willReturn("<a href='www.habitissimo.com'></a>");
-        $this->templateRenderer->getFileExtension()->willReturn('.twig');
-        $this->componentLibrary->getComponentPath("Button", ".twig")
+            ->getTemplateContent($className, ".twig")
+            ->willReturn("<p>a content</p>");
+
+        $this->componentLibrary
+            ->getComponentPath($className, ".twig")
             ->willReturn('/Button/Button.twig');
+            
         $this->componentLibrary
             ->addTemplateToLibrary(
-                Argument::type('string'),
-                Argument::type('string'),
-                Argument::type('string')
+                $className,
+                '<p>a content</p>',
+                '/Button/Button.twig'
             )->willReturn(null);
+
+        $this->templateRenderer
+            ->getFileExtension()
+            ->willReturn('.twig');
+
         $this->templateRenderer->render(
-            "<a href='www.habitissimo.com'></a>",
-            array("id" => null,
-            "size" => "md",
-            "type" => "primary",
-            "disabled" => null,
-            "href" => "www.habitissimo.com",
-            "position" => null,
-            "role" => "button",
-            "block" => false,
-            "with_icon" => false,
-            "title" => null,
-            "rel" => null,
-            "target" => null,
-            "onclick" => null,
-                "children" => null,
-                "webcomponent_children" => null)
-        )->willReturn("<a href='www.habitissimo.com'></a>");
-        $this->assertEquals("<a href='www.habitissimo.com'></a>", $this->renderer->render($button));
+          "<p>a content</p>",
+          array(
+            "dataAttributes" => $button->dataAttributes,
+            "innerHtml" => null,
+            "className" => null,
+            "children" => null
+          )
+        )->willReturn("<p>a rendered content</p>");
+
+        $this->assertEquals('<p>a rendered content</p>', $this->renderer->render($button));
     }
 
     public function testRenderComponentWithoutTemplate(): void
     {
-        $renderedButton = '<a href="asasasas" role="button" class="
-          button-social-share share-size-md share-primary
-
-
-
-
-
-  ">
-            <i class="icon icon-twitter"> </i>
-
-
-</a>';
+        $renderedButton = '<a>A content</a>';
         $button = new TwitterShareSocialButton();
         $button->href = "asasasas";
-        $this->componentLibrary->getTemplateContent("TwitterShareSocialButton", ".twig")
+        $button->type = "primary";
+
+
+      $buttonComponentClass = new class() extends TwitterShareSocialButton {};
+      $button = new $buttonComponentClass();
+      $className = get_class($button);
+
+        $this->componentLibrary->getTemplateContent($className, ".twig")
             ->willReturn($renderedButton);
         $this->templateRenderer->getFileExtension()->willReturn('.twig');
         $this->componentLibrary
-            ->getComponentPath("TwitterShareSocialButton", ".twig")
+            ->getComponentPath($className, ".twig")
             ->willReturn('/Button/Button.twig');
         $this->componentLibrary
             ->addTemplateToLibrary(
@@ -96,23 +96,27 @@ class RendererTest extends TestCase
 
         $this->templateRenderer->render(
             $renderedButton,
-            array("id" => null,
-                "size" => "md",
-                "type" => "primary",
-                "icon_type" => "twitter",
-                "is_social_share" => true,
-                "disabled" => null,
-                "href" => "asasasas",
-                "position" => null,
-                "role" => "button",
-                "block" => false,
-                "with_icon" => true,
-                "title" => null,
-                "rel" => null,
-                "target" => null,
-                "onclick" => null,
-                "children" => null,
-                "webcomponent_children" => null)
+            array(
+              "icon_type" => "twitter",
+              "is_social_share" => true,
+              "id" => null,
+              "size" => "md",
+              "type" => "primary",
+              "disabled" => null,
+              "href" => null,
+              "position" => null,
+              "role" => "button",
+              "block" => false,
+              "with_icon" => true,
+              "title" => null,
+              "rel" => null,
+              "target" => null,
+              "onclick" => null,
+              "dataAttributes" => null,
+              "innerHtml" => null,
+              "className" => null,
+              "children" => null,
+            )
         )->willReturn($renderedButton);
         $this->assertEquals($renderedButton, $this->renderer->render($button));
     }

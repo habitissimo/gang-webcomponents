@@ -50,11 +50,13 @@ class Parser
 
     public function _defaultHandler($parser, $data): void
     {
+        
         $this->buffer->append($data);
     }
 
     public function _voidElementHandler($parser, $name, $attrs): void
     {
+        
         $opened = false;
         if ($this->opensNewComponent($name)) {
             $this->bufferToFragment();
@@ -72,6 +74,7 @@ class Parser
 
     public function _startElementHandler($parser, $name, $attrs=[]): void
     {
+        
         if ($this->opensNewComponent($name)) {
             $this->bufferToFragment();
             $this->current_webcomponent = $name;
@@ -86,6 +89,7 @@ class Parser
 
     public function _endElementHandler($parser, $name): void
     {
+        
         $this->buffer->appendClosingXmlTag($name);
 
         if ($this->matchesCurrentComponent($name)) {
@@ -148,6 +152,7 @@ class Parser
 
     public static function isWebComponent(string $tagName) : bool
     {
+
         return preg_match("/^[A-Z].*/", $tagName) && ucfirst($tagName) === $tagName;
     }
 }

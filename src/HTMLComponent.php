@@ -39,7 +39,8 @@ abstract class HTMLComponent
         $attr_name = Str::snake($name);
         $this->{$attr_name} = $value;
 
-        return; // TODO: should we keep the validation here?
+
+      return; // TODO: should we keep the validation here?
 
         throw new ComponentAttributeNotFound($name, $this->getClassName());
     }

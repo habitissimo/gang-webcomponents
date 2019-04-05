@@ -48,4 +48,29 @@ class InnerHTMLExtractorTest extends TestCase
         $html = InnerHTMLExtractor::extract($input, 'Button');
         $this->assertEquals("",$html);
     }
+
+    /** @test */
+    public function should_extract_inner_content() : void
+    {
+        $input = "<Fragment><Button>Hi</Button></Fragment>";
+        $x = InnerHTMLExtractor::extract($input, 'Fragment');
+        $this->assertEquals("<Button>Hi</Button>", $x);
+    }
+
+    /** @test */
+    public function should_extract_inner_content_with_attributes() : void
+    {
+        $input = "<Fragment><Button foo=\"asd\">Hi</Button></Fragment>";
+        $x = InnerHTMLExtractor::extract($input,"Fragment");
+
+        $this->assertEquals("<Button foo=\"asd\">Hi</Button>", $x);
+    }
+
+    /** @test */
+    public function should_extract_inner_content_with_entities() : void
+    {
+        $input = "<Fragment><Button foo=\"&ntilde;\">Hi</Button></Fragment>";
+        $x = InnerHTMLExtractor::extract($input, 'Fragment');
+        $this->assertEquals("<Button foo=\"&ntilde;\">Hi</Button>", $x);
+    }    
 }

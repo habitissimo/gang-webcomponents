@@ -11,8 +11,11 @@ use Gang\WebComponents\Parser\Nodes\Fragment;
 use Gang\WebComponents\Parser\Parser;
 use Gang\WebComponents\Parser\Nodes\WebComponent;
 use Gang\WebComponents\Renderer\Renderer;
+use Gang\WebComponents\Renderer\TreeRenderer;
+use Gang\WebComponentsTests\WebComponents\Button\Button;
 
-use Habitissimo\Utils\Web\Src\Component\Button\Button;
+//use Habitissimo\Utils\Web\Src\Component\Button\Button;
+
 use PHPUnit\Framework\TestCase;
 
 use Prophecy\Prophet;
@@ -39,20 +42,7 @@ final class CoreTests extends TestCase
 </head>
 
 <body class="home">
-  <a
-       role = "button"
-  class ="
-          btn btn-primary btn-md
-
-
-
-
-  "
->
-    Esto es un Boton a renderizar
-
-</a>
-
+  <a role="button">Esto es un Boton a renderizar</a>
 </body>
 </html>
 ';
@@ -60,24 +50,25 @@ final class CoreTests extends TestCase
     public function setup()
     {
         $this->prophet = new Prophet;
-        $this->parser = $this->prophet->prophesize(Parser::class);
-        $this->renderer = $this->prophet->prophesize(Renderer::class);
+        $this->parser = new Parser();
+        $this->renderer = $this->prophet->prophesize(TreeRenderer::class);
         $this->loader = $this->prophet->prophesize(ComponentLibrary::class);
         $this->factory = $this->prophet->prophesize(HTMLComponentFactory::class);
+
+
+        $lib = new ComponentLibrary();
+        $lib->loadLibrary("Gang\WebComponentsTests\WebComponents", __DIR__ . DIRECTORY_SEPARATOR .  "WebComponents");
+
         $this->controller = new WebComponentController(
-            $this->parser->reveal(),
-            $this->renderer->reveal(),
-            $this->loader->reveal(),
-            $this->factory->reveal()
+            $lib,
+            $this->parser,
+            $this->renderer = new TreeRenderer($lib)
         );
     }
 
     public function testPlainHTMLOnly() : void
     {
         $an_htrml_string = "<a href='foo'>Goto my site</a>";
-        $this->parser
-            ->parse($an_htrml_string)
-            ->willReturn([new Fragment($an_htrml_string)]);
         $result = $this->controller->process($an_htrml_string);
 
         $this->assertEquals($an_htrml_string, $result);
@@ -86,20 +77,9 @@ final class CoreTests extends TestCase
     public function testWebComponentOnly()
     {
         $an_htrml_string = "<Button href='foo'>Goto my site</Button>";
-        $expected_render = "<a href='foo'>Goto my site</a>";
-
-        $this->parser
-            ->parse($an_htrml_string)
-            ->willReturn([new WebComponent($an_htrml_string, "Button", ["href" => "foo"])]);
-
-        $this->parser
-            ->parse($expected_render)
-            ->willReturn([new Fragment($expected_render)]);
-        $this->factory->create(new WebComponent($an_htrml_string, "Button", ["href" => "foo"]))->willReturn(new Button());
-        $this->renderer->render(new Button())->willReturn($expected_render);
+        $expected_render = '<a role="button" href="foo">Goto my site</a>';
 
         $result = $this->controller->process($an_htrml_string);
-
         $this->assertEquals($expected_render, $result);
     }
 
@@ -107,26 +87,13 @@ final class CoreTests extends TestCase
     {
         $non_wc = '<img src="foo"/>';
         $wc = '<Button href="foo">Go to my site</Button>';
-        $rendered_wc = '<a href="foo">Go to my site</a>';
+        $rendered_wc = '<a role="button" href="foo">Go to my site</a>';
         $input = $non_wc . $wc;
         $expected_render = $non_wc . $rendered_wc;
-
-        $this->parser->parse($input)->willReturn([
-            new Fragment($non_wc), new WebComponent($wc, "Button", ["href" => "foo"])
-        ]);
-        $this->parser->parse($rendered_wc)->willReturn([
-            new Fragment($rendered_wc)
-        ]);
-        $this->parser->parse(Argument::type('string'))->shouldBeCalledTimes(2);
-        $this->factory->create(Argument::type(WebComponent::class))
-            ->willReturn(new Button());
-        $this->renderer->render(Argument::type(HTMLComponent::class))
-            ->willReturn($rendered_wc);
 
         $result = $this->controller->process($input);
 
         $this->assertEquals($expected_render, $result);
-        $this->prophet->checkPredictions();
     }
 
     /**
@@ -135,18 +102,26 @@ final class CoreTests extends TestCase
     public function should_integrate_web_components() : void
     {
         $lib = new ComponentLibrary();
-        $lib->loadLibrary("Gang\WebComponents\Tests\WebComponents", __DIR__ . DIRECTORY_SEPARATOR .  "WebComponents");
-        $controller = new WebComponentController(null, null, $lib, null, null);
+        $lib->loadLibrary("Gang\WebComponentsTests\WebComponents", __DIR__ . DIRECTORY_SEPARATOR .  "WebComponents");
+        $controller = new WebComponentController($lib);
         $parsed_template = $controller->process(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR .  "WebComponents" . DIRECTORY_SEPARATOR ."IntegrationTest.twig"));
         $this->assertEquals($this->integrationHtmlResult,$parsed_template);
     }
 
-    public function testComplexRadioInputGroup() : void
-    {
-        $lib = new ComponentLibrary();
-        $lib->loadLibrary("Habitissimo\Utils\Web\Src\Component", __DIR__ . DIRECTORY_SEPARATOR . '..'. DIRECTORY_SEPARATOR . '..'. DIRECTORY_SEPARATOR. "Src" . DIRECTORY_SEPARATOR . 'Component');
-        $controller = new WebComponentController(null, null, $lib, null, null);
-        $parsed_template = $controller->process(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR .  "WebComponents" . DIRECTORY_SEPARATOR ."RadioInputGroup.twig"));
-        $this->assertEquals($this->integrationHtmlResult,$parsed_template);
-    }
+//     public function testComplexRadioInputGroup() : void
+//     {
+//         $lib = new ComponentLibrary();
+//         $lib->loadLibrary("Habitissimo\Utils\Web\Src\Component", __DIR__ . DIRECTORY_SEPARATOR . '..'. DIRECTORY_SEPARATOR . '..'. DIRECTORY_SEPARATOR. "Src" . DIRECTORY_SEPARATOR . 'Component');
+//         $controller = new WebComponentController($lib);
+//         $parsed_template = $controller->process(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR .  "WebComponents" . DIRECTORY_SEPARATOR ."RadioInputGroup.twig"));
+//         $this->assertEquals($this->integrationHtmlResult,$parsed_template);
+//     }
+
+
+  public function testAddAtribute()
+  {
+    $button = '<Button className="btn-outlined"></Button>';
+    $result = $this->controller->process($button);
+    $this->assertEquals('<a class="btn btn-outlined" role="button"></a>', $result);
+  }
 }

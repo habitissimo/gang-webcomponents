@@ -1,33 +1,6 @@
-<a
-  {% if id %} id = "{{ id }}" {% endif %}
-  {% if href %} href = "{{ href }}" {% endif %}
-  {% if role %} role = "{{ href? 'button' : role }}" {% endif %}
-  {% if title %} title = "{{ title }}" {% endif %}
-  {% if rel %} rel = "{{ rel }}" {% endif %}
-  {% if target %} target = "{{ target }}" {% endif %}
-  {% if onclick %} onclick = "{{ onclick }}" {% endif %}
-
-  class ="
-    {% if is_social_share %}
-      button-social-share share-size-{{ size }} share-{{ type }}
-    {% else %}
-      btn btn-{{ type }} btn-{{ size }}
-    {% endif %}
-    {# Align element to position #}
-    {{ position? 'pull-' ~ position : '' }}
-    {# Add icons class #}
-    {% if with_icon == 'true' %}
-      {{ is_social_share ? '' : 'btn-icon' }}
-    {% endif %}
-    {# Add disabled class #}
-    {{ disabled ? 'disabled' : '' }}
-
-    {{ block ? 'btn-full' : '' }}
-  "
->
-    {{ children | raw }}
-    {% if with_icon == 'true' %}
-        <Icon type="{{ icon_type}}"></Icon>
-    {% endif %}
-
+<a {% if id %}id="{{ id }}"{% endif -%} {% if className %}class="btn {{ className }}" {% endif -%} {% if role %}role="{{ role }}" {% endif -%} {% if href -%} href="{{ href }}"{%- endif -%}>
+    {{- children | raw }}
+    {%- if with_icon == 'true' -%}
+        <Icon type="{{ icon_type }}"></Icon>
+    {%- endif -%}
 </a>

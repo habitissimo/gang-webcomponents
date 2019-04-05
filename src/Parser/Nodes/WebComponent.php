@@ -24,17 +24,23 @@ class WebComponent implements NodeInterface
 
     public function __construct(string $outerHtml, string $name, array $attrs)
     {
-        $this->outerHtml = $outerHtml;
+        $this->outerHtml = $this->removeSpaceAndLineJump($outerHtml);
         $this->name = $name;
         $this->attributes = $attrs;
-        $this->innerHtml = InnerHTMLExtractor::extract($outerHtml,$name);
+        $this->innerHtml = InnerHTMLExtractor::extract($this->outerHtml,$name);
         $this->originalInnerHtml = $this->innerHtml;
         $this->createChildren();
     }
 
-    public static function create(string $outerHtml, string $name, array $attrs)
+    private function removeSpaceAndLineJump(string $outerHtml)
     {
-        return new static ($outerHtml,$name,$attrs);
+        //Remove jump line and spaces between content
+        $outerHtmlWithoutSpaces = explode("\n", trim($outerHtml));
+        foreach ($outerHtmlWithoutSpaces as $key => $value) {
+            $outerHtmlWithoutSpaces[$key]= trim($value);
+        }
+    
+        return implode('',$outerHtmlWithoutSpaces);
     }
 
     public function __toString() : string
@@ -50,13 +56,11 @@ class WebComponent implements NodeInterface
     private function extractInnerHtml(string $outerHtml): string
     {
         $innerHTML = '';
-
         $dom = Dom::create();
         $self = Dom::elementFromString($dom, $outerHtml);
         foreach ($self->childNodes as $child) {
             $innerHTML .= Dom::elementToString($dom, $child);
         }
-
         return $innerHTML;
     }
 
@@ -94,6 +98,7 @@ class WebComponent implements NodeInterface
     {
         $parser = new Parser();
         $elements = $parser->parse($this->innerHtml);
+        
         foreach ($elements as $element) {
             $this->children[] = $element;
         }

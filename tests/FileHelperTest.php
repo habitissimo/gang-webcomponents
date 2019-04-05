@@ -35,4 +35,11 @@ class FileHelperTest extends TestCase
             File::getNameSpaceFromFolder('/Navbar/Collapsable')
         );
     }
+
+    public function testAnonymousClassName() : void
+    {
+        $class = new class() {};
+        $instance = new $class();
+        $this->assertEquals(get_class($instance), File::getClassFromNameSpace(get_class($class)));
+    }
 }
