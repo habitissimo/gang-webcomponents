@@ -18,9 +18,9 @@ class WebComponentController
     private $library;
 
     public function __construct(
-        ?ComponentLibrary $library=null,
         ?Parser $parser=null,
         ?TreeRenderer $renderer=null,
+        ?ComponentLibrary $library=null,
         ?LoggerInterface $logger = null
     ) {
         $library = $library ?? new ComponentLibrary();

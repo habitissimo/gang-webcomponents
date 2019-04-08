@@ -28,7 +28,7 @@ class Renderer
 
         $context['children'] = $context['innerHtml'];
 
-        $context['className'] = $context['classname'];
+        //$context['className'] = $context['classname'];
 
 
         // In case that the content it couldn't be render return an empty string

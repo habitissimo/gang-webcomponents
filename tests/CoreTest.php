@@ -60,9 +60,9 @@ final class CoreTests extends TestCase
         $lib->loadLibrary("Gang\WebComponentsTests\WebComponents", __DIR__ . DIRECTORY_SEPARATOR .  "WebComponents");
 
         $this->controller = new WebComponentController(
-            $lib,
             $this->parser,
-            $this->renderer = new TreeRenderer($lib)
+          $this->renderer = new TreeRenderer($lib),
+          $lib
         );
     }
 
@@ -103,7 +103,7 @@ final class CoreTests extends TestCase
     {
         $lib = new ComponentLibrary();
         $lib->loadLibrary("Gang\WebComponentsTests\WebComponents", __DIR__ . DIRECTORY_SEPARATOR .  "WebComponents");
-        $controller = new WebComponentController($lib);
+        $controller = new WebComponentController(null, null, $lib);
         $parsed_template = $controller->process(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR .  "WebComponents" . DIRECTORY_SEPARATOR ."IntegrationTest.twig"));
         $this->assertEquals($this->integrationHtmlResult,$parsed_template);
     }
