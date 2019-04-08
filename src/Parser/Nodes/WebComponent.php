@@ -29,7 +29,8 @@ class WebComponent implements NodeInterface
         $this->attributes = $attrs;
         $this->innerHtml = InnerHTMLExtractor::extract($this->outerHtml,$name);
         $this->originalInnerHtml = $this->innerHtml;
-        $this->createChildren();
+        //$this->createChildren();
+        dd($this);
     }
 
     private function removeSpaceAndLineJump(string $outerHtml)

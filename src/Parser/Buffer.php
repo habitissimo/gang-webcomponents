@@ -7,11 +7,11 @@ namespace Gang\WebComponents\Parser;
  */
 class Buffer
 {
-    private $content = '';
+    private $content = [];
 
     public function append(string $value): void
     {
-        $this->content .= $value;
+        $this->content[] = $value;
     }
 
     public function appendOpeningXmlTag(string $name, array $attrs=[], $selfClosing=false): void
@@ -36,14 +36,14 @@ class Buffer
 
     public function read(): string
     {
-        $value = $this->content;
-        $this->content = '';
+        $value = implode('', $this->content);
+        $this->content = [];
 
         return $value;
     }
 
     public function empty(): bool
     {
-        return strlen($this->content) === 0;
+        return count($this->content) === 0;
     }
 }

@@ -46,7 +46,12 @@ class Renderer
         $dom = Dom::create();
         $element = Dom::elementFromString($dom, $rendered);
 
-        $className = $component->className ?? $component->classname;
+        $className = $component->className;
+
+        if (!$className && isset($component->classname)) {
+          $className = $component->classname;
+        }
+
         if ($className && empty($element->getAttribute("class"))) {
             $element->setAttribute('class', $className);
         }
