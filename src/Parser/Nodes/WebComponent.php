@@ -16,22 +16,59 @@ use Gang\WebComponents\Helpers\Dom;
 class WebComponent implements NodeInterface
 {
     private $outerHtml = '';
+
+  /**
+   * @return string
+   */
+  public function getOuterHtml(): string
+  {
+    return $this->outerHtml;
+  }
+
+  /**
+   * @param string $outerHtml
+   */
+  public function setOuterHtml(string $outerHtml): void
+  {
+    $this->outerHtml = $outerHtml;
+  }
     private $name;
     private $attributes = [];
     private $innerHtml = '';
     private $originalInnerHtml = '';
     private $children = [];
 
-    public function __construct(string $outerHtml, string $name, array $attrs)
+    private $isCloseTag;
+
+//    public function __construct(string $outerHtml, string $name, array $attrs)
+//    {
+//        $this->outerHtml = $this->removeSpaceAndLineJump($outerHtml);
+//        $this->name = $name;
+//        $this->attributes = $attrs;
+//        $this->innerHtml = InnerHTMLExtractor::extract($this->outerHtml,$name);
+//        $this->originalInnerHtml = $this->innerHtml;
+//        //$this->createChildren();
+//
+//    }
+
+    public function isCloseTag()
     {
-        $this->outerHtml = $this->removeSpaceAndLineJump($outerHtml);
-        $this->name = $name;
-        $this->attributes = $attrs;
-        $this->innerHtml = InnerHTMLExtractor::extract($this->outerHtml,$name);
-        $this->originalInnerHtml = $this->innerHtml;
-        //$this->createChildren();
-        dd($this);
+      return $this->isCloseTag;
     }
+
+    public function closeTag()
+    {
+      $this->isCloseTag =  !$this->isCloseTag;
+    }
+
+    public function __construct(string $name, array $attrs)
+    {
+      $this->name = $name;
+      $this->attributes = $attrs;
+      $this->isCloseTag = false;
+
+    }
+
 
     private function removeSpaceAndLineJump(string $outerHtml)
     {
@@ -40,7 +77,7 @@ class WebComponent implements NodeInterface
         foreach ($outerHtmlWithoutSpaces as $key => $value) {
             $outerHtmlWithoutSpaces[$key]= trim($value);
         }
-    
+
         return implode('',$outerHtmlWithoutSpaces);
     }
 
@@ -95,11 +132,16 @@ class WebComponent implements NodeInterface
         return $this->children;
     }
 
+    public function setChildren(WebComponent $children) : void
+    {
+       array_push($this->children,$children);
+    }
+
     private function createChildren() : void
     {
         $parser = new Parser();
         $elements = $parser->parse($this->innerHtml);
-        
+
         foreach ($elements as $element) {
             $this->children[] = $element;
         }
