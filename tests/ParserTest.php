@@ -159,4 +159,12 @@ final class ParserTests extends TestCase
             new Webcomponent('<Input></Input>', "Input", [])
         ], $this->parser->parse($input));
     }
+
+    public function testHtmlInComponentAttribute() : void
+    {
+      $input = '<Alert content="<b>Hello</b>"/><html>';
+      $this->assertEquals([
+        new WebComponent('<Alert content="<b>Hello</b>"/>', "Alert", ["content" => "<b>hello</b>"]),
+      ], $this->parser->parse($input));
+    }
 }

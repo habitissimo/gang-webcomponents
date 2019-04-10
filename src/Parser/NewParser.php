@@ -10,10 +10,8 @@ use phpDocumentor\Reflection\Types\Null_;
 
 class NewParser
 {
-  private $deep = 0;
-  private $buffers = [];
-  private $current_webcomponent;
-  private $current_webcomponent_attrs = [];
+  private $stack = [];
+  private $children_stack = [];
   private $response = [];
 
   public function __construct()
@@ -23,9 +21,8 @@ class NewParser
 
   private function reset(): void
   {
-    $this->deep = 0;
-    $this->current_webcomponent = null;
-    $this->current_webcomponent_attrs = [];
+    $this->stack = [];
+    $this->children_stack = [];
     $this->response = [];
     $this->makeParser();
   }
@@ -40,92 +37,6 @@ class NewParser
     $this->parser->setVoidElementHandler([$this, "_voidElementHandler"]);
   }
 
-  public function _defaultHandler($parser, $data): void
-  {
-    $this->addToBuffer("2",$data);
-  }
-
-  public function _voidElementHandler($parser, $name, $attrs): void
-  {
-    dd($name);
-  }
-
-  public function _startElementHandler($parser, $name, $attrs = []): void
-  {
-    if ($this->opensNewComponent($name)) {
-      $this->current_webcomponent = new WebComponent($name, $attrs);
-      $this->deep = 0;
-      array_push($this->buffers, new Buffer());
-    } else {
-
-      if ($this->matchesCurrentComponent($name)) {
-        $this->deep++;
-      }
-
-      $child = $this->getLastChild($this->current_webcomponent);
-
-      if($child->isCloseTag()){
-
-        $fhader = $this->getFatherComponent($this->current_webcomponent, $child);
-        $fhader->setChildren(new WebComponent($name, $attrs));
-
-      }else{
-
-        $child->setChildren(new WebComponent($name, $attrs));
-
-      }
-      array_push($this->buffers, new Buffer());
-    }
-
-    $this->addToBuffer("0", $name, $attrs);
-  }
-
-  public function _endElementHandler($parser, $name): void
-  {
-    $this->addToBuffer(1,$name);
-    $this->closeComponentTag($this->current_webcomponent, $name);
-    $child = $this->findComponent($this->current_webcomponent, $name);
-    $this->findWebComponent = [];
-    d(["WEB COMPONENT ENCONTRADO", $child]);
-    d(["BUFFER", $this->buffers]);
-    $child->setOuterHtml(array_pop($this->buffers)->read());
-  }
-
-  private function bufferToFragment(): void
-  {
-//    if (!$this->buffer->empty()) {
-//      $this->response[] = new Fragment($this->buffer->read());
-//    }
-  }
-
-  private function bufferToWebComponent(): void
-  {
-//    if (!$this->buffer->empty()) {
-//      $this->response[] = new WebComponent(
-//        $this->buffer->read(),
-//        $this->current_webcomponent,
-//        $this->current_webcomponent_attrs
-//      );
-//    }
-//    $this->current_webcomponent = null;
-//    $this->current_webcomponent_attrs = [];
-  }
-
-  private function opensNewComponent($name): bool
-  {
-    return null === $this->current_webcomponent;
-  }
-
-  private function matchesCurrentComponent($name): bool
-  {
-    return $name === $this->current_webcomponent->getTagName();
-  }
-
-  private function insideComponent(): bool
-  {
-    return null !== $this->current_webcomponent;
-  }
-
   /**
    * Returns an iterator that produces Plain HTML nodes or entire WebComponents nodes
    */
@@ -133,12 +44,78 @@ class NewParser
   {
     $this->reset();
     $success = $this->parser->parse($html);
-//    d($this->current_webcomponent);
-//    dd($this->buffers);
-    // process remaining buffer
-    // $this->bufferToFragment();
-    dd($this->current_webcomponent);
+
+    $this->saveResponse();
+
     return $this->response;
+  }
+
+  public function _defaultHandler($parser, $data): void
+  {
+    if($data!=""){
+      $this->addToBuffer("2",$data);
+      array_push( $this->stack ,new Fragment($data));
+    }
+  }
+
+  public function _voidElementHandler($parser, $name, $attrs): void
+  {
+    array_push($this->stack,[new WebComponent($name, $attrs), new Buffer()]);
+    $this->addToBuffer("0",$name, $attrs);
+  }
+
+  public function _startElementHandler($parser, $name, $attrs): void
+  {
+    array_push($this->stack,[new WebComponent($name, $attrs), new Buffer()]);
+    $this->addToBuffer("0",$name, $attrs);
+  }
+
+  public function _endElementHandler($parser, $name): void
+  {
+    $this->addToBuffer("1",$name);
+
+    $component = end($this->stack);
+
+    $component = $this->processFragment($component);
+
+    while ($name != $component[0]->getTagName()) {
+      $childComponent = array_pop($this->stack);
+
+      array_push($this->children_stack, [$childComponent[0], $childComponent[0]->getOuterHtml()]);
+      $component = end($this->stack);
+      $component = $this->processFragment($component);
+    }
+
+    $webComponent = end($this->stack);
+    $this->children_stack = array_reverse($this->children_stack);
+    $innerHTml = '';
+
+    foreach ($this->children_stack as $children){
+      $webComponent[0]->setChildren($children[0]);
+      $innerHTml .= $children[1];
+    }
+
+    $webComponent[0]->setInnerHtml($innerHTml);
+    $webComponent[0]->setouterHtml($webComponent[1]->read());
+
+
+    $this->children_stack = [];
+
+//    if(count($this->stack)==1){
+//      $this->saveResponse();
+//    }
+
+  }
+
+  private function processFragment($component){
+
+    if ($component instanceof Fragment) {
+      $fragment = array_pop($this->stack);
+      array_push($this->children_stack, [$fragment, $fragment->__toString()]);
+      return $component = end($this->stack);
+    }
+
+    return $component;
   }
 
   public static function isWebComponent(string $tagName): bool
@@ -147,119 +124,41 @@ class NewParser
     return preg_match("/^[A-Z].*/", $tagName) && ucfirst($tagName) === $tagName;
   }
 
-  private $lastChild;
-  private function getLastChild(WebComponent $webComponent)
-  {
-    $childs = $webComponent->getChildren();
-    $child = end($childs);
-
-
-    if(!$child){
-
-      $this->lastChild = $webComponent;
-
-    }else {
-
-      if (count($child->getChildren()) > 0) {
-
-        $this->getLastChild(end($child->getChildren()));
-
-      } else {
-
-        $this->lastChild =  $child;
-
-      }
-
-    }
-
-    return $this->lastChild;
-  }
-
-  private function getFatherComponent(WebComponent $webComponent, WebComponent $child){
-    foreach ($webComponent->getChildren() as $fhader){
-      if($child==$fhader){
-        return $webComponent;
-      }else{
-        $this->getFatherComponent($fhader, $child);
-      }
-    }
-  }
-
-  private $findWebComponent = [];
-  private function findComponent(WebComponent $webcomponent , string $name){
-
-    if ($webcomponent->getTagName()==$name && $webcomponent->isCloseTag()){
-      array_push($this->findWebComponent, $webcomponent);
-    }
-    if(!empty($webcomponent->getChildren())){
-      foreach ($webcomponent->getChildren() as $child){
-        $this->findComponent($child, $name);
-      }
-    }
-
-    return reset($this->findWebComponent);
-
-  }
-
-  private $webComponenetsToClose = [];
-
-  private function closeComponentTag(WebComponent $webComponent, string $name)
-  {
-    if(!$webComponent->isCloseTag() && $webComponent->getTagName()==$name){
-      array_push( $this->webComponenetsToClose, $webComponent);
-    }
-    foreach ($webComponent->getChildren() as $child) {
-      $this->closeComponentTag($child, $name);
-    }
-
-    $wc = array_pop($this->webComponenetsToClose);
-
-    if($wc!=null){
-      $wc->closeTag();
-      $this->webComponenetsToClose = [];
-    }
-
-  }
-
   private function addToBuffer($num, $data , array $attrs = null)
   {
     switch ($num){
       case "0":
-        $this->addOnpeingXmlTag($data, $attrs);
+        $this->addTag($data, $attrs, 'appendOpeningXmlTag');
         break;
       case "1":
-        $this->addCloseXmlTag($data);
+        $this->addTag($data, null, 'appendClosingXmlTag');
         break;
       case "2":
-        $this->addDefaultData($data);
+        $this->addTag($data, null, 'append');
         break;
     }
   }
 
-  private function addOnpeingXmlTag ($name, array $attrs){
-    foreach ($this->buffers as $buffer){
-      $buffer->appendOpeningXmlTag($name, $attrs);
-    }
-
-  }
-
-  private function addCloseXmlTag ($name){
-    foreach ($this->buffers as $buffer){
-      $buffer->appendClosingXmlTag($name);
-    }
-  }
-
-  private function addDefaultData ($data){
-    if(!$data==""){
-      if(empty ( $this->buffers)){
-        array_push($this->buffers, new Buffer());
-      }
-      foreach ($this->buffers as $buffer){
-        $buffer->append($data);
+  private function addTag ($name, $attrs,  $hello){
+    foreach ($this->stack as $buffer) {
+      if (count($buffer) > 1) {
+        if ($attrs == null) {
+          $buffer[1]->$hello($name, $attrs);
+        } else {
+          $buffer[1]->$hello($name);
+        }
       }
     }
   }
 
-
+  private function saveResponse (){
+    $component  = array_pop($this->stack);
+    if($component instanceof Fragment){
+      array_push($this->response, $component);
+    }
+    else{
+      array_push($this->response, $component[0]);
+    }
+  }
 
 }

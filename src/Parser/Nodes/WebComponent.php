@@ -16,29 +16,12 @@ use Gang\WebComponents\Helpers\Dom;
 class WebComponent implements NodeInterface
 {
     private $outerHtml = '';
-
-  /**
-   * @return string
-   */
-  public function getOuterHtml(): string
-  {
-    return $this->outerHtml;
-  }
-
-  /**
-   * @param string $outerHtml
-   */
-  public function setOuterHtml(string $outerHtml): void
-  {
-    $this->outerHtml = $outerHtml;
-  }
     private $name;
     private $attributes = [];
     private $innerHtml = '';
     private $originalInnerHtml = '';
     private $children = [];
 
-    private $isCloseTag;
 
 //    public function __construct(string $outerHtml, string $name, array $attrs)
 //    {
@@ -51,22 +34,10 @@ class WebComponent implements NodeInterface
 //
 //    }
 
-    public function isCloseTag()
-    {
-      return $this->isCloseTag;
-    }
-
-    public function closeTag()
-    {
-      $this->isCloseTag =  !$this->isCloseTag;
-    }
-
     public function __construct(string $name, array $attrs)
     {
       $this->name = $name;
       $this->attributes = $attrs;
-      $this->isCloseTag = false;
-
     }
 
 
@@ -132,9 +103,19 @@ class WebComponent implements NodeInterface
         return $this->children;
     }
 
-    public function setChildren(WebComponent $children) : void
+    public function setChildren($children) : void
     {
        array_push($this->children,$children);
+    }
+
+    public function getOuterHtml(): string
+    {
+      return $this->outerHtml;
+    }
+
+    public function setOuterHtml(string $outerHtml): void
+    {
+      $this->outerHtml = $outerHtml;
     }
 
     private function createChildren() : void
