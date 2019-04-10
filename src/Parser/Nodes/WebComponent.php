@@ -41,16 +41,16 @@ class WebComponent implements NodeInterface
     }
 
 
-    private function removeSpaceAndLineJump(string $outerHtml)
-    {
-        //Remove jump line and spaces between content
-        $outerHtmlWithoutSpaces = explode("\n", trim($outerHtml));
-        foreach ($outerHtmlWithoutSpaces as $key => $value) {
-            $outerHtmlWithoutSpaces[$key]= trim($value);
-        }
-
-        return implode('',$outerHtmlWithoutSpaces);
-    }
+//    private function removeSpaceAndLineJump(string $outerHtml)
+//    {
+//        //Remove jump line and spaces between content
+//        $outerHtmlWithoutSpaces = explode("\n", trim($outerHtml));
+//        foreach ($outerHtmlWithoutSpaces as $key => $value) {
+//            $outerHtmlWithoutSpaces[$key]= trim($value);
+//        }
+//
+//        return implode('',$outerHtmlWithoutSpaces);
+//    }
 
     public function __toString() : string
     {
@@ -62,16 +62,16 @@ class WebComponent implements NodeInterface
         return $this->attributes;
     }
 
-    private function extractInnerHtml(string $outerHtml): string
-    {
-        $innerHTML = '';
-        $dom = Dom::create();
-        $self = Dom::elementFromString($dom, $outerHtml);
-        foreach ($self->childNodes as $child) {
-            $innerHTML .= Dom::elementToString($dom, $child);
-        }
-        return $innerHTML;
-    }
+//    private function extractInnerHtml(string $outerHtml): string
+//    {
+//        $innerHTML = '';
+//        $dom = Dom::create();
+//        $self = Dom::elementFromString($dom, $outerHtml);
+//        foreach ($self->childNodes as $child) {
+//            $innerHTML .= Dom::elementToString($dom, $child);
+//        }
+//        return $innerHTML;
+//    }
 
     public function getTagName() : string
     {
@@ -118,15 +118,15 @@ class WebComponent implements NodeInterface
       $this->outerHtml = $outerHtml;
     }
 
-    private function createChildren() : void
-    {
-        $parser = new Parser();
-        $elements = $parser->parse($this->innerHtml);
-
-        foreach ($elements as $element) {
-            $this->children[] = $element;
-        }
-    }
+//    private function createChildren() : void
+//    {
+//        $parser = new Parser();
+//        $elements = $parser->parse($this->innerHtml);
+//
+//        foreach ($elements as $element) {
+//            $this->children[] = $element;
+//        }
+//    }
 
     /**
      * Function to handle errors from the DomDocument
