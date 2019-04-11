@@ -55,36 +55,41 @@ class NewParser
     return $this->response;
   }
 
-  public function _defaultHandler($parser, $data,  $attrs =  null , bool $isHtmlTag = false, bool $isCloseTag = false, $isSelfClose= false): void
+  public function _defaultHandler($parser, $data): void
   {
-    $data = trim($data);
+    $foo = $this->foo($parser, $data);
+    $this->addToBuffer("append", $data);
+    $this->bar($foo);
+  }
+
+  private function cleanString(string $data) : string
+  {
     $data = str_replace("\n","", $data);
 
+    return $data;
+  }
+
+  public function foo($parser, $data): string
+  {
+    $data = $this->cleanString($data);
+
     if ($data === "") {
-      return;
+      return "";
     }
 
-    $component = end($this->stack);
+    [$element, $_] = end($this->stack);
 
-    if (!$component[0] instanceof Fragment || !$component) {
+    if (!$element instanceof Fragment || !$element) {
       array_push($this->stack, [new Fragment(''), new Buffer()]);
     }
 
-    if ($isHtmlTag) {
-      if ($isSelfClose) {
-        $this->addToBuffer("appendOpeningXmlTag", $data, $attrs, true);
-      } elseif ($isCloseTag) {
-        $this->addToBuffer("appendClosingXmlTag", $data);
-      } else {
-        $this->addToBuffer("appendOpeningXmlTag", $data, $attrs);
-      }
-    } else {
-      $this->addToBuffer("append", $data);
-    }
+    return $data;
+  }
 
-    $component = end($this->stack);
-
-    $component[0]->setValue($component[0]->__toString() . $component[1]->read());
+  public function bar()
+  {
+      [$element, $buffer] = end($this->stack);
+      $element->setValue($element->__toString() . $buffer->read());
   }
 
   public function _voidElementHandler($parser, $name, $attrs): void
@@ -101,8 +106,14 @@ class NewParser
   {
 
     if(!$this->isWebComponent($name)){
-      $isSelfClose ? $this->_defaultHandler($parser, $name, $attrs, true, false, true) :
-        $this->_defaultHandler($parser, $name, $attrs, true);
+      if ($isSelfClose) {
+        $foo = $this->foo($parser, $name);
+        $this->addToBuffer("appendOpeningXmlTag", $name, $attrs, true);
+      } else {
+        $foo = $this->foo($parser, $name);
+        $this->addToBuffer("appendOpeningXmlTag", $name, $attrs);
+      }
+      $this->bar($foo);
     }else{
       if($isSelfClose){
         $this->_voidElementHandler($parser, $name, $attrs);
@@ -119,7 +130,9 @@ class NewParser
 
     if (!$isSelfClose) {
       if (!$this->isWebComponent($name)) {
-        $this->_defaultHandler($parser, $name, null, true, true);
+        $foo = $this->foo($parser, $name);
+        $this->addToBuffer("appendClosingXmlTag", $name);
+        $this->bar($foo);
       } else {
         $this->addToBuffer("appendClosingXmlTag", $name);
 
@@ -181,6 +194,7 @@ class NewParser
 
   private function addToBuffer($type, $data , array $attrs = null, $selfClosing=false)
   {
+    $data = $this->cleanString($data);
     foreach ($this->stack as $buffer) {
         if (is_array($attrs) || $selfClosing) {
           $buffer[1]->$type($data, $attrs, $selfClosing);
@@ -189,7 +203,6 @@ class NewParser
         }
     }
   }
-
 
   private function saveResponse ()
   {

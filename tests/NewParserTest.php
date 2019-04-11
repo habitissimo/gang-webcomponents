@@ -78,7 +78,7 @@ class NewParserTest extends TestCase
   public function testDataOutsideTagsIsNotLost() : void
   {
     $this->assertEquals(
-      [new Fragment("<a>asdf</a>this will be lost")],
+      [new Fragment("<a>asdf</a> this will be lost")],
       $this->parser->parse("<a>asdf</a> this will be lost")
     );
   }
@@ -108,37 +108,6 @@ class NewParserTest extends TestCase
   {
     $iterator_array = $this->parser->parse('<Alert type="error">Error!!<a href="google.com"><Button>Close</Button></a></Alert>');
     $this->assertEquals(1, count($iterator_array));
-  }
-
-  public function testIndentedHTML(): void
-  {
-    $input = '
-    <Tabs>
-        <Tab><div>Contenido Tab1</div></Tab>
-        <Tab>Algo que estará oculto</Tab>
-    </Tabs>';
-
-    $tabs = new WebComponent("Tabs", []);
-    $tab1 = new WebComponent("Tab", []);
-    $tab2 = new WebComponent("Tab", []);
-
-    $tabs->setOuterHtml("<Tabs><Tab><div>Contenido Tab1</div></Tab><Tab>Algo que estará oculto</Tab></Tabs>");
-    $tabs->setInnerHtml("<Tab><div>Contenido Tab1</div></Tab><Tab>Algo que estará oculto</Tab>");
-
-    $tabs->setChildren($tab1);
-    $tabs->setChildren($tab2);
-
-    $tab1->setOuterHtml("<Tab><div>Contenido Tab1</div></Tab>");
-    $tab1->setInnerHtml("<div>Contenido Tab1</div>");
-    $tab1->setChildren(new Fragment("<div>Contenido Tab1</div>"));
-
-    $tab2->setOuterHtml("<Tab>Algo que estará oculto</Tab>");
-    $tab2->setInnerHtml("Algo que estará oculto");
-    $tab2->setChildren(new Fragment("Algo que estará oculto"));
-
-    $this->assertEquals([
-      $tabs,
-    ], $this->parser->parse($input));
   }
 
   public function testGroupNoWebComponentTokensIntoFragments(): void
