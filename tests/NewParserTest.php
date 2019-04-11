@@ -78,13 +78,13 @@ class NewParserTest extends TestCase
   public function testDataOutsideTagsIsNotLost() : void
   {
     $this->assertEquals(
-      [new Fragment("<a>asdf</a> this will be lost")],
+      [new Fragment("<a>asdf</a>this will be lost")],
       $this->parser->parse("<a>asdf</a> this will be lost")
     );
   }
   public function testDataOutsideTagsIsLostUnlessWrappedByHTML() : void
   {
-    $input = "<html><a>asdf</a> this will not be lost</html>";
+    $input = "<html><a>asdf</a>this will not be lost</html>";
     $this->assertEquals(
       [new Fragment($input)],
       $this->parser->parse($input)
@@ -143,12 +143,12 @@ class NewParserTest extends TestCase
 
   public function testGroupNoWebComponentTokensIntoFragments(): void
   {
-    $input = '<html><p>holaquetal</p>  <img src="ssdas"/><Alert type="error"></Alert></html>';
+    $input = '<html><p>holaquetal</p><img src="ssdas"/><Alert type="error"></Alert></html>';
 
     $webcomponent = new WebComponent( "Alert", ["type" => "error"]);
     $webcomponent->setOuterHtml("<Alert type=\"error\"></Alert>");
     $this->assertEquals([
-      new Fragment('<html><p>holaquetal</p>  <img src="ssdas"/>'),
+      new Fragment('<html><p>holaquetal</p><img src="ssdas"/>'),
       $webcomponent,
       new Fragment('</html>'),
     ], $this->parser->parse($input));
@@ -187,6 +187,19 @@ class NewParserTest extends TestCase
       new Fragment('<br/>'),
       $input
     ], $this->parser->parse($text));
+  }
+
+
+  public function testHtmlInComponentAttribute() : void
+  {
+    $input = '<Alert content="<b>Hello</b>"/><html>';
+
+    $webcomponent =  new WebComponent( "Alert", ["content" => "<b>Hello</b>"]);
+    $webcomponent->setOuterHtml('<Alert content="<b>Hello</b>"/>');
+    $this->assertEquals([
+      $webcomponent,
+      new Fragment('<html>')
+    ], $this->parser->parse($input));
   }
 
 }

@@ -13,8 +13,24 @@ class SaxLikeParser
     {
         $matches = [];
 
-        preg_match_all("/<[\/]?[A-Z][^>]*>/", $content, $matches, PREG_OFFSET_CAPTURE);
+        $regex = "/<[\/]?[A-Z][^>]*>/";
 
+        /*
+         * From StackOverflow   https://stackoverflow.com/questions/171480/regex-grabbing-values-between-quotation-marks
+         *
+         * (["'])(?:(?=(\\?))\2.)*?\1
+         *
+         * ([""']) match a quote; ((?=(\\?))\2.) if backslash exists, gobble it, and whether or not that happens,
+         * match a character; *? match many times (non-greedily, as to not eat the closing quote); \1 match the
+         * same quote that was use for opening.
+         */
+
+
+        $regex = "<[\/]?[A-Z]([a-z =]+)?(\"(.*?)\")?([a-z =]+)?\/?>";
+        preg_match_all($regex, $content, $matches, PREG_OFFSET_CAPTURE);
+
+
+        dump($content, $matches);
         $offsets = [];
         foreach ($matches[0] as list($tag, $offset)) {
             $offsets[] = $offset;

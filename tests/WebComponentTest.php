@@ -10,8 +10,7 @@ final class WebComponentTests extends TestCase
 {
   public function testWebComponentFactory()
   {
-    $str = '<Button>aaaa</Button>';
-    $this->assertInstanceOf(WebComponent::class, new WebComponent($str, 'Button', []));
+    $this->assertInstanceOf(WebComponent::class, new WebComponent( 'Button', []));
   }
 
   public function testInnerHTML(): void
