@@ -47,7 +47,7 @@ class NewParserTest extends TestCase
     $parser = $this->parser->parse($html);
     $webcomponent = new WebComponent("Div", []);
     $webcomponent->setOuterHtml($html);
-    $webcomponent->setChildren(new Fragment("a content"));
+    $webcomponent->appendChild(new Fragment("a content"));
     $webcomponent->setInnerHtml("a content");
 
     $this->assertEquals($webcomponent, $parser[0]);
@@ -131,8 +131,8 @@ class NewParserTest extends TestCase
     $selfClose = new WebComponent("Icon",[]);
     $webcomponent->setOuterHtml($inner_wc);
     $webcomponent->setInnerHtml("<p>texto alerta</p><Icon/>");
-    $webcomponent->setChildren(new Fragment("<p>texto alerta</p>"));
-    $webcomponent->setChildren($selfClose);
+    $webcomponent->appendChild(new Fragment("<p>texto alerta</p>"));
+    $webcomponent->appendChild($selfClose);
 
     $selfClose->setOuterHtml("<Icon/>");
 

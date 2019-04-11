@@ -100,12 +100,12 @@ class WebComponent implements NodeInterface
 
     public function getChildren() : array
     {
-        return $this->children;
+        return $this->childrens;
     }
 
-    public function setChildren($children) : void
+    public function appendChild($child) : void
     {
-       array_push($this->children,$children);
+      $this->children[] = $child;
     }
 
     public function getOuterHtml(): string
