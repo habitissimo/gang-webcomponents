@@ -7,9 +7,9 @@ class Stack
 {
     private $stack = [];
 
-    public function push($element, $buffer)
+    public function push($element)
     {
-          array_push($this->stack, [$element, $buffer]);
+          array_push($this->stack,$element);
     }
 
     public function pop()
@@ -30,6 +30,11 @@ class Stack
     public function getStack()
     {
       return $this->stack;
+    }
+
+    public function unshift($element)
+    {
+      array_unshift($this->stack, $element);
     }
 
     public function reset()

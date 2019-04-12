@@ -12,15 +12,9 @@ class BufferStack
     $this->addToBuffer($stack,'append', $value);
   }
 
-  public function appendOpeningTag(array $stack, string $name, array $attrs=[]): void
+  public function appendOpeningTag(array $stack, string $name, array $attrs=[], bool $selfClosing): void
   {
-    $this->addToBuffer($stack, 'appendOpeningXmlTag', $name, $attrs);
-  }
-
-
-  public function appendSelfClosingTag(array $stack, string $name, array $attrs=[]): void
-  {
-    $this->addToBuffer($stack,'appendOpeningXmlTag', $name, $attrs, true);
+    $this->addToBuffer($stack, 'appendOpeningXmlTag', $name, $attrs, $selfClosing);
   }
 
   public function appendClosingTag(array $stack , string $name): void
@@ -28,10 +22,10 @@ class BufferStack
     $this->addToBuffer($stack,'appendClosingXmlTag', $name);
   }
 
-  private function addToBuffer(arra $stack, $methodName, $data, array $attrs = null, $selfClosing=false)
+  private function addToBuffer(array $stack, $methodName, $data, array $attrs = null, $selfClosing=false)
   {
     $data = $this->cleanString($data);
-    foreach ($this->stack as [$_, $buffer]) {
+    foreach ($stack as [$_, $buffer]) {
       if (is_array($attrs) || $selfClosing) {
         $buffer->$methodName($data, $attrs, $selfClosing);
       } else {
@@ -39,5 +33,11 @@ class BufferStack
       }
     }
   }
+
+  private function cleanString(string $data) : string
+  {
+    $data = str_replace("\n","", $data);
+    return $data;
+ }
 
 }

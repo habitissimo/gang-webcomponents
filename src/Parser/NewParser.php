@@ -3,25 +3,25 @@
 
 namespace Gang\WebComponents\Parser;
 
-
 use Diggin\HTMLSax\HTMLSax;
-use DigginTest\HTMLSax\ListenerInterface;
 use Gang\WebComponents\Parser\Nodes\Fragment;
-use Gang\WebComponents\Parser\Stack;
 use Gang\WebComponents\Parser\Nodes\WebComponent;
+use Gang\WebComponents\Parser\TagMaker;
+
 
 
 class NewParser
 
 {
   private $stack;
-  private $children_stack = [];
+  private $children_stack;
   private $response = [];
   private $parser;
 
   public function __construct()
   {
     $this->stack = new Stack();
+    $this->children_stack = new Stack();
     $this->reset();
   }
 
@@ -47,7 +47,7 @@ class NewParser
   private function reset(): void
   {
     $this->stack->reset();
-    $this->children_stack = [];
+    $this->children_stack->reset();
     $this->response = [];
     $this->makeParser();
   }
@@ -59,53 +59,46 @@ class NewParser
     $this->parser->set_element_handler('_startElementHandler','_endElementHandler');
     $this->parser->set_data_handler('_defaultHandler');
   }
-  private function stackOrKeepFragment(): void
-  {
-    [$element, $_] = $this->stack->peek();
 
-    if ($this->stack->length() === 0 || $element instanceof WebComponent) {
-      array_push($this->stack, [new Fragment(''), new Buffer()]);
-    }
-  }
 
-  private function stackWebComponent($name, $attrs)
+  public function updateFragmentValue($data)
   {
-    $this->stack->push(new WebComponent($name, $attrs), new Buffer());
-  }
-
-  public function updateFragmentValueFromBuffer()
-  {
-      [$fragment, $buffer] = $this->stack->peek();
-      $current_content = $fragment->__toString();
-      $fragment->setValue($current_content . $buffer->read());
+    $fragment = $this->stack->peek();
+    $current_content = $fragment->__toString();
+    $fragment->setValue($current_content . $data);
   }
 
   public function _defaultHandler($parser, $data): void
   {
     $this->stackOrKeepFragment();
-    $this->addToBuffer("append", $data);
-    $this->updateFragmentValueFromBuffer();
+    $this->updateFragmentValue($data);
   }
 
   public function _startElementHandler($parser, $name, $attrs, $isSelfClose): void
   {
     if ($this->isWebComponent($name)) {
-      $this->startWebComponentHandler($name, $attrs, $isSelfClose);
+      $this->stackWebComponent($name, $attrs, $isSelfClose);
     } else {
       $this->stackOrKeepFragment();
-      $this->addToBuffer("appendOpeningXmlTag", $name, $attrs, $isSelfClose);
-      $this->updateFragmentValueFromBuffer();
+      $this->updateFragmentValue(TagMaker::getOpeningTag($name, $attrs, $isSelfClose));
     }
   }
 
-  private function startWebComponentHandler($name, $attrs, $isSelfClose)
+  private function stackWebComponent($name, $attrs, $isSelfClose)
   {
-    $this->stackWebComponent($name, $attrs);
-    $this->addToBuffer("appendOpeningXmlTag", $name, $attrs, $isSelfClose);
-    if ($isSelfClose) {
-      $webComponent = $this->stack->peek();
-      $this->setElementInnerHtml($webComponent, '');
+    $webcomponent = new WebComponent($name, $attrs, $isSelfClose);
+
+    $this->stack->push($webcomponent);
+  }
+
+  private function stackOrKeepFragment(): void
+  {
+    $element = $this->stack->peek();
+
+    if ($this->stack->length() === 0 || $element instanceof WebComponent) {
+      $this->stack->push(new Fragment(''));
     }
+
   }
 
   public function _endElementHandler($parser, $name, $isSelfClose): void
@@ -115,74 +108,52 @@ class NewParser
     }
 
     if ($this->isWebComponent($name)) {
-      $this->addToBuffer("appendClosingXmlTag", $name);
 
       if ($this->headIsFragment()) {
-        $this->moveHeadFragmentToChildrenStack();
+        $this->moveHeadElementToChildrenStack();
       }
 
-      [$element, $buffer] = $this->stack->peek();
+      $element = $this->stack->peek();
+
       while ($name !== $element->getTagName()) {
-        $this->moveHeadWebComponentToChildrenStack();
+        $this->moveHeadElementToChildrenStack();
+
         if ($this->headIsFragment()) {
-          $this->moveHeadFragmentToChildrenStack();
+          $this->moveHeadElementToChildrenStack();
         }
-        [$element, $buffer] = $this->stack->peek();
+        $element= $this->stack->peek();
       }
 
-      $innerHtml = $this->getInnerHtmlToChildrenStack();
-      $this->setElementInnerHtml([$element,$buffer], $innerHtml);
+      $this->appendChildrenToWebComponent();
+
+      $element->closeTag($name);
+
     } else {
       $this->stackOrKeepFragment();
-      $this->addToBuffer("appendClosingXmlTag", $name);
-      $this->updateFragmentValueFromBuffer();
+      $this->updateFragmentValue(TagMaker::getClosingTag($name));
     }
   }
 
-
-  private function cleanString(string $data) : string
-  {
-    $data = str_replace("\n","", $data);
-
-    return $data;
-  }
 
   private function headIsFragment()
   {
-    [$element, $_] = $this->stack->peek();
+    $element = $this->stack->peek();
     return $element instanceof Fragment;
   }
 
-  private function moveHeadFragmentToChildrenStack()
+  private function moveHeadElementToChildrenStack()
   {
-    [$fragment, $_] = $this->stack->pop();
-    array_unshift($this->children_stack, [$fragment, $fragment->__toString()]);
+    $element = $this->stack->pop();
+    $this->children_stack->unshift($element);
   }
 
-  private function moveHeadWebComponentToChildrenStack()
+  private function appendChildrenToWebComponent()
   {
-    [$childElement, $_] = $this->stack->pop();
-    array_unshift($this->children_stack, [$childElement, $childElement->getOuterHtml()]);
-  }
+    $webComponent = $this->stack->peek();
 
-  private function getInnerHtmlToChildrenStack() : string
-  {
-    [$webComponent, $webComponentBuffer] = $this->stack->peek();
-
-    $innerHtml = '';
-    foreach ($this->children_stack as [$childElement, $childContent]) {
+    foreach ($this->children_stack->getStack() as $childElement) {
       $webComponent->appendChild($childElement);
-      $innerHtml .= $childContent;
     }
-    $this->children_stack=[];
-    return $innerHtml;
-  }
-
-  private function setElementInnerHtml($webComponent, $innerHtml='')
-  {
-    [$element, $buffer] = $webComponent;
-    $element->setInnerHtml($innerHtml);
-    $element->setOuterHtml($buffer->read());
 
     if ($this->stack->length() === 1){
       $this->saveResponse();
@@ -191,21 +162,10 @@ class NewParser
 
   private function saveResponse ()
   {
-    foreach ($this->stack->getStack() as [$element, $_]) {
-        array_push($this->response, $element);
+    foreach ($this->stack->getStack() as $element) {
+     $this->response[] = $element;
     }
     $this->stack->reset();
   }
 
-  private function addToBuffer($methodName, $data, array $attrs = null, $selfClosing=false)
-  {
-    $data = $this->cleanString($data);
-    foreach ($this->stack->getStack() as [$_, $buffer]) {
-      if (is_array($attrs) || $selfClosing) {
-        $buffer->$methodName($data, $attrs, $selfClosing);
-      } else {
-        $buffer->$methodName($data);
-      }
-    }
-  }
 }

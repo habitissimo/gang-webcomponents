@@ -30,8 +30,8 @@ class NewParserTest extends TestCase
   public function testOnlyOneWebComponent(){
     $html = "<Div></Div>";
     $parser = $this->parser->parse($html);
-    $webcomponent = new WebComponent("Div", []);
-    $webcomponent->setOuterHtml($html);
+    $webcomponent = new WebComponent("Div", [], false);
+    $webcomponent->closeTag("Div");
     $this->assertEquals($webcomponent, $parser[0]);
   }
 
@@ -45,10 +45,10 @@ class NewParserTest extends TestCase
   public function testOnlyOneWebComponentWithContentInside(){
     $html = "<Div>a content</Div>";
     $parser = $this->parser->parse($html);
-    $webcomponent = new WebComponent("Div", []);
-    $webcomponent->setOuterHtml($html);
+
+    $webcomponent = new WebComponent("Div", [], false);
     $webcomponent->appendChild(new Fragment("a content"));
-    $webcomponent->setInnerHtml("a content");
+    $webcomponent->setOuterHtml($html);
 
     $this->assertEquals($webcomponent, $parser[0]);
   }
@@ -57,11 +57,9 @@ class NewParserTest extends TestCase
   public function testTwoWebComponents(){
     $html = "<Component></Component><OtherCOmponent></OtherCOmponent>";
     $parser = $this->parser->parse($html);
-    $webcomponent = new WebComponent("Component", []);
-    $webcomponent->setOuterHtml("<Component></Component>");
+    $webcomponent = new WebComponent("Component", [], false);
 
-    $webcomponent1 = new WebComponent("OtherCOmponent", []);
-    $webcomponent1->setOuterHtml("<OtherCOmponent></OtherCOmponent>");
+    $webcomponent1 = new WebComponent("OtherCOmponent", [], false);
 
     $this->assertEquals([$webcomponent,$webcomponent1], $parser);
   }
@@ -129,11 +127,11 @@ class NewParserTest extends TestCase
 
     $webcomponent = new WebComponent("Alert", []);
     $selfClose = new WebComponent("Icon",[]);
-    $webcomponent->setOuterHtml($inner_wc);
     $webcomponent->setInnerHtml("<p>texto alerta</p><Icon/>");
     $webcomponent->appendChild(new Fragment("<p>texto alerta</p>"));
     $webcomponent->appendChild($selfClose);
 
+    $webcomponent->setOuterHtml($inner_wc);
     $selfClose->setOuterHtml("<Icon/>");
 
     $this->assertEquals([
