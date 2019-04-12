@@ -22,35 +22,11 @@ class WebComponent implements NodeInterface
     private $originalInnerHtml = '';
     private $children = [];
 
-
-//    public function __construct(string $outerHtml, string $name, array $attrs)
-//    {
-//        $this->outerHtml = $this->removeSpaceAndLineJump($outerHtml);
-//        $this->name = $name;
-//        $this->attributes = $attrs;
-//        $this->innerHtml = InnerHTMLExtractor::extract($this->outerHtml,$name);
-//        $this->originalInnerHtml = $this->innerHtml;
-//        //$this->createChildren();
-//
-//    }
-
     public function __construct(string $name, array $attrs)
     {
       $this->name = $name;
       $this->attributes = $attrs;
     }
-
-
-//    private function removeSpaceAndLineJump(string $outerHtml)
-//    {
-//        //Remove jump line and spaces between content
-//        $outerHtmlWithoutSpaces = explode("\n", trim($outerHtml));
-//        foreach ($outerHtmlWithoutSpaces as $key => $value) {
-//            $outerHtmlWithoutSpaces[$key]= trim($value);
-//        }
-//
-//        return implode('',$outerHtmlWithoutSpaces);
-//    }
 
     public function __toString() : string
     {

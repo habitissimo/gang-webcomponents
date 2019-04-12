@@ -7,19 +7,21 @@ namespace Gang\WebComponents\Parser;
 use Diggin\HTMLSax\HTMLSax;
 use DigginTest\HTMLSax\ListenerInterface;
 use Gang\WebComponents\Parser\Nodes\Fragment;
+use Gang\WebComponents\Parser\Stack;
 use Gang\WebComponents\Parser\Nodes\WebComponent;
 
 
 class NewParser
 
 {
-  private $stack = [];
+  private $stack;
   private $children_stack = [];
   private $response = [];
   private $parser;
 
   public function __construct()
   {
+    $this->stack = new Stack();
     $this->reset();
   }
 
@@ -44,7 +46,7 @@ class NewParser
 
   private function reset(): void
   {
-    $this->stack = [];
+    $this->stack->reset();
     $this->children_stack = [];
     $this->response = [];
     $this->makeParser();
@@ -59,21 +61,21 @@ class NewParser
   }
   private function stackOrKeepFragment(): void
   {
-    [$element, $_] = end($this->stack);
+    [$element, $_] = $this->stack->peek();
 
-    if (count($this->stack) === 0 || $element instanceof WebComponent) {
+    if ($this->stack->length() === 0 || $element instanceof WebComponent) {
       array_push($this->stack, [new Fragment(''), new Buffer()]);
     }
   }
 
   private function stackWebComponent($name, $attrs)
   {
-    array_push($this->stack,[new WebComponent($name, $attrs), new Buffer()]);
+    $this->stack->push(new WebComponent($name, $attrs), new Buffer());
   }
 
   public function updateFragmentValueFromBuffer()
   {
-      [$fragment, $buffer] = end($this->stack);
+      [$fragment, $buffer] = $this->stack->peek();
       $current_content = $fragment->__toString();
       $fragment->setValue($current_content . $buffer->read());
   }
@@ -101,7 +103,7 @@ class NewParser
     $this->stackWebComponent($name, $attrs);
     $this->addToBuffer("appendOpeningXmlTag", $name, $attrs, $isSelfClose);
     if ($isSelfClose) {
-      $webComponent = end($this->stack);
+      $webComponent = $this->stack->peek();
       $this->setElementInnerHtml($webComponent, '');
     }
   }
@@ -119,13 +121,13 @@ class NewParser
         $this->moveHeadFragmentToChildrenStack();
       }
 
-      [$element, $buffer] = end($this->stack);
+      [$element, $buffer] = $this->stack->peek();
       while ($name !== $element->getTagName()) {
         $this->moveHeadWebComponentToChildrenStack();
         if ($this->headIsFragment()) {
           $this->moveHeadFragmentToChildrenStack();
         }
-        [$element, $buffer] = end($this->stack);
+        [$element, $buffer] = $this->stack->peek();
       }
 
       $innerHtml = $this->getInnerHtmlToChildrenStack();
@@ -147,25 +149,25 @@ class NewParser
 
   private function headIsFragment()
   {
-    [$element, $_] = end($this->stack);
+    [$element, $_] = $this->stack->peek();
     return $element instanceof Fragment;
   }
 
   private function moveHeadFragmentToChildrenStack()
   {
-    [$fragment, $_] = array_pop($this->stack);
+    [$fragment, $_] = $this->stack->pop();
     array_unshift($this->children_stack, [$fragment, $fragment->__toString()]);
   }
 
   private function moveHeadWebComponentToChildrenStack()
   {
-    [$childElement, $_] = array_pop($this->stack);
+    [$childElement, $_] = $this->stack->pop();
     array_unshift($this->children_stack, [$childElement, $childElement->getOuterHtml()]);
   }
 
   private function getInnerHtmlToChildrenStack() : string
   {
-    [$webComponent, $webComponentBuffer] = end($this->stack);
+    [$webComponent, $webComponentBuffer] = $this->stack->peek();
 
     $innerHtml = '';
     foreach ($this->children_stack as [$childElement, $childContent]) {
@@ -182,23 +184,23 @@ class NewParser
     $element->setInnerHtml($innerHtml);
     $element->setOuterHtml($buffer->read());
 
-    if (count($this->stack) === 1){
+    if ($this->stack->length() === 1){
       $this->saveResponse();
     }
   }
 
   private function saveResponse ()
   {
-    foreach ($this->stack as [$element, $_]) {
+    foreach ($this->stack->getStack() as [$element, $_]) {
         array_push($this->response, $element);
     }
-    $this->stack = [];
+    $this->stack->reset();
   }
 
   private function addToBuffer($methodName, $data, array $attrs = null, $selfClosing=false)
   {
     $data = $this->cleanString($data);
-    foreach ($this->stack as [$_, $buffer]) {
+    foreach ($this->stack->getStack() as [$_, $buffer]) {
       if (is_array($attrs) || $selfClosing) {
         $buffer->$methodName($data, $attrs, $selfClosing);
       } else {
