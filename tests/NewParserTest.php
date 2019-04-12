@@ -171,4 +171,48 @@ class NewParserTest extends TestCase
     ], $this->parser->parse($input));
   }
 
+  public function testNestedChildren() : void
+  {
+    $inputText = '<Html><Div><Button></Button></Div><Div><Aside><Button></Button></Aside></Div></Html>';
+
+    $Html =  new WebComponent( "Html", []);
+    $Html->setOuterHtml($inputText);
+    $Html->setInnerHtml('<Div><Button></Button></Div><Div><Aside><Button></Button></Aside></Div>');
+
+    $Div_1 =  new WebComponent( "Div", []);
+    $Div_1->setOuterHtml('<Div><Button></Button></Div>');
+    $Div_1->setInnerHtml('<Button></Button>');
+
+    $Button_1 =  new WebComponent( "Button", []);
+    $Button_1->setOuterHtml('<Button></Button>');
+
+
+    $Div_2 =  new WebComponent( "Div", []);
+    $Div_2->setOuterHtml('<Div><Aside><Button></Button></Aside></Div>');
+    $Div_2->setInnerHtml('<Aside><Button></Button></Aside>');
+
+
+    $Aside =  new WebComponent( "Aside", []);
+    $Aside->setOuterHtml('<Aside><Button></Button></Aside>');
+    $Aside->setInnerHtml('<Button></Button>');
+
+
+    $Button_2 =  new WebComponent( "Button", []);
+    $Button_2->setOuterHtml('<Button></Button>');
+
+    $Aside->appendChild($Button_2);
+    $Div_2->appendChild($Aside);
+
+    $Div_1->appendChild($Button_1);
+
+    $Html->appendChild($Div_1);
+    $Html->appendChild($Div_2);
+
+
+    $this->assertEquals([
+      $Html,
+    ], $this->parser->parse($inputText));
+  }
+
+
 }

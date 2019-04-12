@@ -52,21 +52,11 @@ class NewParser
 
   private function makeParser(): void
   {
-
     $this->parser = new HTMLSax;
     $this->parser->set_object($this);
     $this->parser->set_element_handler('_startElementHandler','_endElementHandler');
     $this->parser->set_data_handler('_defaultHandler');
-
   }
-
-  private function cleanString(string $data) : string
-  {
-    $data = str_replace("\n","", $data);
-
-    return $data;
-  }
-
   private function stackOrKeepFragment(): void
   {
     [$element, $_] = end($this->stack);
@@ -129,21 +119,30 @@ class NewParser
         $this->moveHeadFragmentToChildrenStack();
       }
 
-      [$element, $_] = end($this->stack);
+      [$element, $buffer] = end($this->stack);
       while ($name !== $element->getTagName()) {
         $this->moveHeadWebComponentToChildrenStack();
         if ($this->headIsFragment()) {
           $this->moveHeadFragmentToChildrenStack();
         }
-        [$element, $_] = end($this->stack);
+        [$element, $buffer] = end($this->stack);
       }
 
-      $this->foo();
+      $innerHtml = $this->getInnerHtmlToChildrenStack();
+      $this->setElementInnerHtml([$element,$buffer], $innerHtml);
     } else {
       $this->stackOrKeepFragment();
       $this->addToBuffer("appendClosingXmlTag", $name);
       $this->updateFragmentValueFromBuffer();
     }
+  }
+
+
+  private function cleanString(string $data) : string
+  {
+    $data = str_replace("\n","", $data);
+
+    return $data;
   }
 
   private function headIsFragment()
@@ -155,28 +154,26 @@ class NewParser
   private function moveHeadFragmentToChildrenStack()
   {
     [$fragment, $_] = array_pop($this->stack);
-    array_push($this->children_stack, [$fragment, $fragment->__toString()]);
+    array_unshift($this->children_stack, [$fragment, $fragment->__toString()]);
   }
 
   private function moveHeadWebComponentToChildrenStack()
   {
     [$childElement, $_] = array_pop($this->stack);
-    array_push($this->children_stack, [$childElement, $childElement->getOuterHtml()]);
+    array_unshift($this->children_stack, [$childElement, $childElement->getOuterHtml()]);
   }
 
-  private function foo()
+  private function getInnerHtmlToChildrenStack() : string
   {
     [$webComponent, $webComponentBuffer] = end($this->stack);
-
-    $this->children_stack = array_reverse($this->children_stack);
 
     $innerHtml = '';
     foreach ($this->children_stack as [$childElement, $childContent]) {
       $webComponent->appendChild($childElement);
       $innerHtml .= $childContent;
     }
-
-    $this->setElementInnerHtml([$webComponent, $webComponentBuffer], $innerHtml);
+    $this->children_stack=[];
+    return $innerHtml;
   }
 
   private function setElementInnerHtml($webComponent, $innerHtml='')
