@@ -21,9 +21,9 @@ class Fragment implements NodeInterface
   /**
    * @param string $value
    */
-  public function setValue(string $value): void
+  public function appendValue(string $value): void
   {
-    $this->value = $value;
+    $this->value .= $value;
   }
 
   public function __construct(string $value)

@@ -6,9 +6,6 @@ namespace Gang\WebComponents\Parser;
 use Diggin\HTMLSax\HTMLSax;
 use Gang\WebComponents\Parser\Nodes\Fragment;
 use Gang\WebComponents\Parser\Nodes\WebComponent;
-use Gang\WebComponents\Parser\TagMaker;
-
-
 
 class NewParser
 
@@ -58,14 +55,18 @@ class NewParser
     $this->parser->set_object($this);
     $this->parser->set_element_handler('_startElementHandler','_endElementHandler');
     $this->parser->set_data_handler('_defaultHandler');
+    $this->parser->set_escape_handler('_scapeElementHandler');
+  }
+
+  public function _scapeElementHandler($parser,$data){
+     $this->_defaultHandler($parser,TagMaker::getOpeningTag("!{$data}"));
   }
 
 
   public function updateFragmentValue($data)
   {
     $fragment = $this->stack->peek();
-    $current_content = $fragment->__toString();
-    $fragment->setValue($current_content . $data);
+    $fragment->appendValue($data);
   }
 
   public function _defaultHandler($parser, $data): void
@@ -76,6 +77,7 @@ class NewParser
 
   public function _startElementHandler($parser, $name, $attrs, $isSelfClose): void
   {
+
     if ($this->isWebComponent($name)) {
       $this->stackWebComponent($name, $attrs, $isSelfClose);
     } else {
@@ -110,23 +112,23 @@ class NewParser
     if ($this->isWebComponent($name)) {
 
       if ($this->headIsFragment()) {
-        $this->moveHeadElementToChildrenStack();
+        $this->stack->moveHeadElementToStack($this->children_stack);
       }
 
       $element = $this->stack->peek();
 
       while ($name !== $element->getTagName()) {
-        $this->moveHeadElementToChildrenStack();
+        $this->stack->moveHeadElementToStack($this->children_stack);
 
         if ($this->headIsFragment()) {
-          $this->moveHeadElementToChildrenStack();
+          $this->stack->moveHeadElementToStack($this->children_stack);
         }
         $element= $this->stack->peek();
       }
 
       $this->appendChildrenToWebComponent();
 
-      $element->closeTag($name);
+      $element->closeTag();
 
     } else {
       $this->stackOrKeepFragment();
@@ -141,12 +143,6 @@ class NewParser
     return $element instanceof Fragment;
   }
 
-  private function moveHeadElementToChildrenStack()
-  {
-    $element = $this->stack->pop();
-    $this->children_stack->unshift($element);
-  }
-
   private function appendChildrenToWebComponent()
   {
     $webComponent = $this->stack->peek();
@@ -158,6 +154,8 @@ class NewParser
     if ($this->stack->length() === 1){
       $this->saveResponse();
     }
+
+    $this->children_stack->reset();
   }
 
   private function saveResponse ()

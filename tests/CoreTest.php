@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Gang\WebComponentsTests;
 
+use Gang\WebComponents\Parser\NewParser;
 use Gang\WebComponents\WebComponentController;
 use Gang\WebComponents\HTMLComponent;
 use Gang\WebComponents\HTMLComponentFactory;
@@ -31,11 +32,11 @@ final class CoreTests extends TestCase
     private $factory;
 
     private $integrationHtmlResult = '<!DOCTYPE html>
-<html lang="es-ES" >
+<html lang="es-ES">
 <head>
 
-  <link rel="stylesheet" type="text/css" href="https://www.habitissimo.es/static/build/css/frontend.min.css?v=1550482066" />
-  <link rel="stylesheet" type="text/css" href="https://www.habitissimo.es/static/font/iconissimo_e24da5260b1055faad15d85cb5fadd90.woff" />
+  <link rel="stylesheet" type="text/css" href="https://www.habitissimo.es/static/build/css/frontend.min.css?v=1550482066"/>
+  <link rel="stylesheet" type="text/css" href="https://www.habitissimo.es/static/font/iconissimo_e24da5260b1055faad15d85cb5fadd90.woff"/>
   <noscript><style type="text/css">img.lazy{display:none;}</style></noscript>
   <script type="text/javascript" src="https://www.habitissimo.es/static/build/js/habitissimo-frontend.min.js?v=1550482066"></script>
   <script type="text/javascript" src="//static.criteo.net/js/ld/ld.js" async></script><script type="text/javascript">window.criteo_q = window.criteo_q || [];window.criteo_q.push({ event: "setAccount", account: 0 },{ event: "setSiteType", type:"d"},{ event: "viewHome" });</script>
@@ -50,7 +51,7 @@ final class CoreTests extends TestCase
     public function setup()
     {
         $this->prophet = new Prophet;
-        $this->parser = new Parser();
+        $this->parser = new NewParser();
         $this->renderer = $this->prophet->prophesize(TreeRenderer::class);
         $this->loader = $this->prophet->prophesize(ComponentLibrary::class);
         $this->factory = $this->prophet->prophesize(HTMLComponentFactory::class);
@@ -68,7 +69,7 @@ final class CoreTests extends TestCase
 
     public function testPlainHTMLOnly() : void
     {
-        $an_htrml_string = "<a href='foo'>Goto my site</a>";
+        $an_htrml_string = '<a href="foo">Goto my site</a>';
         $result = $this->controller->process($an_htrml_string);
 
         $this->assertEquals($an_htrml_string, $result);
@@ -122,6 +123,6 @@ final class CoreTests extends TestCase
   {
     $button = '<Button className="btn-outlined"></Button>';
     $result = $this->controller->process($button);
-    $this->assertEquals('<a class="btn btn-outlined" role="button"></a>', $result);
+    $this->assertEquals('<a role="button" class="btn-outlined"></a>', $result);
   }
 }

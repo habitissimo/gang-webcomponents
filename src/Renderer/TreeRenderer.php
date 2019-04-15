@@ -24,8 +24,8 @@ class TreeRenderer
   public function render(WebComponent $component)
   {
     $this->postOrderTraverse($component);
-    $htmlCOmponent = $this->factory->create($component);
-    $rendered = $this->renderer->render($htmlCOmponent);
+    $htmlComponent = $this->factory->create($component);
+    $rendered = $this->renderer->render($htmlComponent);
     return $rendered;
   }
 
@@ -37,7 +37,7 @@ class TreeRenderer
   private function postOrderTraverse(WebComponent $component)
   {
     $buffer = $this->getBuffer($component);
-    
+
     foreach ($component->getChildren() as $child) {
       if ($child instanceof WebComponent) {
         $this->postOrderTraverse($child);

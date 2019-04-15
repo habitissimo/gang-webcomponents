@@ -28,9 +28,6 @@ class Renderer
 
         $context['children'] = $context['innerHtml'];
 
-        //$context['className'] = $context['classname'];
-
-
         // In case that the content it couldn't be render return an empty string
         // So the HTML dosen't add anything
 
@@ -46,10 +43,10 @@ class Renderer
         $dom = Dom::create();
         $element = Dom::elementFromString($dom, $rendered);
 
-        $className = $component->className;
+        $className = $component->class_name;
 
         if (!$className && isset($component->classname)) {
-          $className = $component->classname;
+          $className = $component->class_name;
         }
 
         if ($className && empty($element->getAttribute("class"))) {

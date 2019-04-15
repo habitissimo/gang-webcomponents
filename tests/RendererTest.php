@@ -24,7 +24,7 @@ class RendererTest extends TestCase
 
     public function setUp(): void
     {
-        
+
         $this->prophet = new Prophet;
         $this->componentLibrary = $this->prophet->prophesize(ComponentLibrary::class);
         $this->templateRenderer = $this->prophet->prophesize(TemplateRendererInterface::class);
@@ -35,18 +35,18 @@ class RendererTest extends TestCase
     {
         $buttonComponentClass = new class() extends HtmlComponent {};
         $button = new $buttonComponentClass();
-        $className = get_class($button);
+        $class_name = get_class($button);
         $this->componentLibrary
-            ->getTemplateContent($className, ".twig")
+            ->getTemplateContent($class_name, ".twig")
             ->willReturn("<p>a content</p>");
 
         $this->componentLibrary
-            ->getComponentPath($className, ".twig")
+            ->getComponentPath($class_name, ".twig")
             ->willReturn('/Button/Button.twig');
-            
+
         $this->componentLibrary
             ->addTemplateToLibrary(
-                $className,
+                $class_name,
                 '<p>a content</p>',
                 '/Button/Button.twig'
             )->willReturn(null);
@@ -60,7 +60,7 @@ class RendererTest extends TestCase
           array(
             "dataAttributes" => $button->dataAttributes,
             "innerHtml" => null,
-            "className" => null,
+            "class_name" => null,
             "children" => null
           )
         )->willReturn("<p>a rendered content</p>");
@@ -78,13 +78,13 @@ class RendererTest extends TestCase
 
       $buttonComponentClass = new class() extends TwitterShareSocialButton {};
       $button = new $buttonComponentClass();
-      $className = get_class($button);
+      $class_name = get_class($button);
 
-        $this->componentLibrary->getTemplateContent($className, ".twig")
+        $this->componentLibrary->getTemplateContent($class_name, ".twig")
             ->willReturn($renderedButton);
         $this->templateRenderer->getFileExtension()->willReturn('.twig');
         $this->componentLibrary
-            ->getComponentPath($className, ".twig")
+            ->getComponentPath($class_name, ".twig")
             ->willReturn('/Button/Button.twig');
         $this->componentLibrary
             ->addTemplateToLibrary(
@@ -114,7 +114,7 @@ class RendererTest extends TestCase
               "onclick" => null,
               "dataAttributes" => null,
               "innerHtml" => null,
-              "className" => null,
+              "class_name" => null,
               "children" => null,
             )
         )->willReturn($renderedButton);

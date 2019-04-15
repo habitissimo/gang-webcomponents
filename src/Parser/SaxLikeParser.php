@@ -30,7 +30,6 @@ class SaxLikeParser
         preg_match_all($regex, $content, $matches, PREG_OFFSET_CAPTURE);
 
 
-        dump($content, $matches);
         $offsets = [];
         foreach ($matches[0] as list($tag, $offset)) {
             $offsets[] = $offset;

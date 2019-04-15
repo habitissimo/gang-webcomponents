@@ -21,7 +21,6 @@ class WebComponent implements NodeInterface
   private $attributes = [];
   private $innerHtml = '';
   private $children = [];
-  private $parent;
 
   public function __construct(string $name, array $attrs, bool $isSelfClose)
   {
@@ -50,9 +49,26 @@ class WebComponent implements NodeInterface
     return $this->innerHtml;
   }
 
-  public function closeTag($name)
+  public function closeTag()
   {
-    $this->appendOuterHtml(TagMaker::getClosingTag($name));
+    $this->appendOuterHtml(TagMaker::getClosingTag($this->name));
+  }
+
+  public function getChildren() : array
+  {
+    return $this->children;
+  }
+
+  public function appendChild($child) : void
+  {
+    $this->children[] = $child;
+    $this->appendOuterHtml($child->__toString());
+    $this->appendInnerHtml($child->__toString());
+  }
+
+  public function setInnerHtml(string $innerHtml): void
+  {
+    $this->innerHtml = $innerHtml;
   }
 
   private function appendInnerHtml($value) : void
@@ -63,18 +79,6 @@ class WebComponent implements NodeInterface
   private function appendOuterHtml($value) : void
   {
     $this->outerHtml .= $value;
-  }
-
-  public function getChildren() : array
-  {
-    return $this->childrens;
-  }
-
-  public function appendChild($child) : void
-  {
-    $this->children[] = $child;
-    $this->appendOuterHtml($child->__toString());
-    $this->appendInnerHtml($child->__toString());
   }
 
 

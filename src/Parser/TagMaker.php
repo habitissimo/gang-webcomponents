@@ -12,8 +12,12 @@ class TagMaker
     $tag .= $name;
 
     foreach ($attrs as $attr => $value) {
-      $safe_value = addslashes($value);
-      $tag.=  " {$attr}=\"{$safe_value}\"";
+      if ($value){
+        $safe_value = addslashes($value);
+        $tag.=  " {$attr}=\"{$safe_value}\"";
+      }else{
+        $tag.=  " {$attr}";
+      }
     }
 
     $tag .= $selfClosing ? '/>' : '>';

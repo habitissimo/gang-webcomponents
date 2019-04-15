@@ -17,7 +17,7 @@ abstract class HTMLComponent
 
     public $dataAttributes;
     public $innerHtml;
-    public $className;
+    public $class_name;
 
     public function __construct()
     {

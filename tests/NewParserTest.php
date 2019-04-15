@@ -27,11 +27,27 @@ class NewParserTest extends TestCase
     $this->assertEquals(new Fragment("<html><body>Hola</body></html>"), $parser[0]);
   }
 
+  public function testScapeElements(){
+    $html = '<!DOCTYPE html><!--This is a comment. Comments are not displayed in the browser-->';
+    $parser = $this->parser->parse($html);
+
+    $this->assertEquals(new Fragment("<!DOCTYPE html><!--This is a comment. Comments are not displayed in the browser-->"), $parser[0]);
+  }
+
+  public function testAttributeWithNullValue(){
+    $html = '<script async></script>';
+
+    $parser = $this->parser->parse($html);
+
+    $this->assertEquals(new Fragment("<script async></script>"), $parser[0]);
+  }
+
   public function testOnlyOneWebComponent(){
     $html = "<Div></Div>";
     $parser = $this->parser->parse($html);
     $webcomponent = new WebComponent("Div", [], false);
-    $webcomponent->closeTag("Div");
+    $webcomponent->closeTag();
+
     $this->assertEquals($webcomponent, $parser[0]);
   }
 
@@ -44,11 +60,11 @@ class NewParserTest extends TestCase
 
   public function testOnlyOneWebComponentWithContentInside(){
     $html = "<Div>a content</Div>";
-    $parser = $this->parser->parse($html);
-
     $webcomponent = new WebComponent("Div", [], false);
     $webcomponent->appendChild(new Fragment("a content"));
-    $webcomponent->setOuterHtml($html);
+    $webcomponent->closeTag();
+
+    $parser = $this->parser->parse($html);
 
     $this->assertEquals($webcomponent, $parser[0]);
   }
@@ -58,17 +74,16 @@ class NewParserTest extends TestCase
     $html = "<Component></Component><OtherCOmponent></OtherCOmponent>";
     $parser = $this->parser->parse($html);
     $webcomponent = new WebComponent("Component", [], false);
-
+    $webcomponent->closeTag();
     $webcomponent1 = new WebComponent("OtherCOmponent", [], false);
-
+    $webcomponent1->closeTag();
     $this->assertEquals([$webcomponent,$webcomponent1], $parser);
   }
 
   public function testComponentSelfClosed(){
     $html = "<Img/>";
     $parser = $this->parser->parse($html);
-    $webcomponent = new WebComponent("Img", []);
-    $webcomponent->setOuterHtml("<Img/>");
+    $webcomponent = new WebComponent("Img", [], true);
 
     $this->assertEquals($webcomponent, $parser[0]);
   }
@@ -80,6 +95,7 @@ class NewParserTest extends TestCase
       $this->parser->parse("<a>asdf</a> this will be lost")
     );
   }
+
   public function testDataOutsideTagsIsLostUnlessWrappedByHTML() : void
   {
     $input = "<html><a>asdf</a>this will not be lost</html>";
@@ -91,9 +107,8 @@ class NewParserTest extends TestCase
 
   public function testNumOfFragments() : void
   {
-
-    $webcomponet =   new WebComponent("Button", []);
-    $webcomponet->setOuterHtml("<Button></Button>");
+    $webcomponet =   new WebComponent("Button", [], false);
+    $webcomponet->closeTag();
 
     $this->assertEquals([
       new Fragment("<html><a>asasasasas</a>asdasdasdasdasd>"),
@@ -112,8 +127,8 @@ class NewParserTest extends TestCase
   {
     $input = '<html><p>holaquetal</p><img src="ssdas"/><Alert type="error"></Alert></html>';
 
-    $webcomponent = new WebComponent( "Alert", ["type" => "error"]);
-    $webcomponent->setOuterHtml("<Alert type=\"error\"></Alert>");
+    $webcomponent = new WebComponent( "Alert", ["type" => "error"], false);
+    $webcomponent->closeTag();
     $this->assertEquals([
       new Fragment('<html><p>holaquetal</p><img src="ssdas"/>'),
       $webcomponent,
@@ -125,14 +140,12 @@ class NewParserTest extends TestCase
   {
     $inner_wc = "<Alert><p>texto alerta</p><Icon/></Alert>";
 
-    $webcomponent = new WebComponent("Alert", []);
-    $selfClose = new WebComponent("Icon",[]);
-    $webcomponent->setInnerHtml("<p>texto alerta</p><Icon/>");
+    $webcomponent = new WebComponent("Alert", [], false);
+    $selfClose = new WebComponent("Icon",[], true);
+
     $webcomponent->appendChild(new Fragment("<p>texto alerta</p>"));
     $webcomponent->appendChild($selfClose);
-
-    $webcomponent->setOuterHtml($inner_wc);
-    $selfClose->setOuterHtml("<Icon/>");
+    $webcomponent->closeTag();
 
     $this->assertEquals([
       $webcomponent
@@ -143,11 +156,13 @@ class NewParserTest extends TestCase
   {
     $text = '<html><Alert></Alert><br/><Input></Input>';
 
-    $alert =  new WebComponent( "Alert", []);
-    $alert->setOuterHtml("<Alert></Alert>");
+    $alert =  new WebComponent( "Alert", [], false);
 
-    $input = (new Webcomponent( "Input", []));
-    $input->setOuterHtml('<Input></Input>');
+    $input = (new Webcomponent( "Input", [], false));
+
+    $alert->closeTag();
+    $input->closeTag();
+
     $this->assertEquals([
       new Fragment('<html>'),
      $alert,
@@ -161,8 +176,8 @@ class NewParserTest extends TestCase
   {
     $input = '<Alert content="<b>Hello</b>"/><html>';
 
-    $webcomponent =  new WebComponent( "Alert", ["content" => "<b>Hello</b>"]);
-    $webcomponent->setOuterHtml('<Alert content="<b>Hello</b>"/>');
+    $webcomponent =  new WebComponent( "Alert", ["content" => "<b>Hello</b>"], true);
+
     $this->assertEquals([
       $webcomponent,
       new Fragment('<html>')
@@ -173,39 +188,36 @@ class NewParserTest extends TestCase
   {
     $inputText = '<Html><Div><Button></Button></Div><Div><Aside><Button></Button></Aside></Div></Html>';
 
-    $Html =  new WebComponent( "Html", []);
-    $Html->setOuterHtml($inputText);
-    $Html->setInnerHtml('<Div><Button></Button></Div><Div><Aside><Button></Button></Aside></Div>');
+    $Html =  new WebComponent( "Html", [], false);
 
-    $Div_1 =  new WebComponent( "Div", []);
-    $Div_1->setOuterHtml('<Div><Button></Button></Div>');
-    $Div_1->setInnerHtml('<Button></Button>');
+    $Div_1 =  new WebComponent( "Div", [], false);
 
-    $Button_1 =  new WebComponent( "Button", []);
-    $Button_1->setOuterHtml('<Button></Button>');
+    $Button_1 =  new WebComponent( "Button", [], false);
 
+    $Div_2 =  new WebComponent( "Div", [], false);
 
-    $Div_2 =  new WebComponent( "Div", []);
-    $Div_2->setOuterHtml('<Div><Aside><Button></Button></Aside></Div>');
-    $Div_2->setInnerHtml('<Aside><Button></Button></Aside>');
+    $Aside =  new WebComponent( "Aside", [], false);
 
+    $Button_2 =  new WebComponent( "Button", [], false);
 
-    $Aside =  new WebComponent( "Aside", []);
-    $Aside->setOuterHtml('<Aside><Button></Button></Aside>');
-    $Aside->setInnerHtml('<Button></Button>');
+    $Button_1->closeTag();
+    $Div_1->appendChild($Button_1);
 
 
-    $Button_2 =  new WebComponent( "Button", []);
-    $Button_2->setOuterHtml('<Button></Button>');
-
+    $Button_2->closeTag();
     $Aside->appendChild($Button_2);
+    $Aside->closeTag();
     $Div_2->appendChild($Aside);
 
-    $Div_1->appendChild($Button_1);
+    $Div_1->closeTag();
+    $Div_2->closeTag();
 
     $Html->appendChild($Div_1);
     $Html->appendChild($Div_2);
 
+
+    $Html->closeTag();
+    $this->parser->parse($inputText);
 
     $this->assertEquals([
       $Html,

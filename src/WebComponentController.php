@@ -8,6 +8,7 @@ use Gang\WebComponents\Renderer\TreeRenderer;
 use Gang\WebComponents\Logger\WebComponentLogger as Log;
 use Gang\WebComponents\Parser\Nodes\WebComponent;
 use Gang\WebComponents\Parser\Parser;
+use Gang\WebComponents\Parser\NewParser;
 use Psr\Log\LoggerInterface;
 
 class WebComponentController
@@ -18,13 +19,13 @@ class WebComponentController
     private $library;
 
     public function __construct(
-        ?Parser $parser=null,
+        ?NewParser $parser=null,
         ?TreeRenderer $renderer=null,
         ?ComponentLibrary $library=null,
         ?LoggerInterface $logger = null
     ) {
         $library = $library ?? new ComponentLibrary();
-        $this->parser = $parser ?? new Parser();
+        $this->parser = $parser ?? new NewParser();
         $this->renderer = $renderer ?? new TreeRenderer($library);
         if (null !== $logger) {
             WebComponentLogger::setLogger($logger);
