@@ -5,6 +5,7 @@ namespace Gang\WebComponents\Renderer;
 
 use Gang\WebComponents\ComponentLibrary;
 use Gang\WebComponents\Parser\Buffer;
+use Gang\WebComponents\Parser\NewParser;
 use Gang\WebComponents\Parser\Nodes\WebComponent;
 use Gang\WebComponents\Renderer\TwigTemplateRenderer;
 use Gang\WebComponents\HTMLComponentFactory;

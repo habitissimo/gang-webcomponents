@@ -21,6 +21,7 @@ class WebComponent implements NodeInterface
   private $attributes = [];
   private $innerHtml = '';
   private $children = [];
+  private $isCloseWebComponent = false;
 
   public function __construct(string $name, array $attrs, bool $isSelfClose)
   {
@@ -69,6 +70,16 @@ class WebComponent implements NodeInterface
   public function setInnerHtml(string $innerHtml): void
   {
     $this->innerHtml = $innerHtml;
+  }
+
+  public function isCloseWebComponent() : bool
+  {
+    return $this->isCloseWebComponent;
+  }
+
+  public function closeWebcomponent() : void
+  {
+    $this->isCloseWebComponent = true;
   }
 
   private function appendInnerHtml($value) : void

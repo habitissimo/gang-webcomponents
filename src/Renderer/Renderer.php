@@ -7,6 +7,7 @@ use Gang\WebComponents\HTMLComponent;
 use Gang\WebComponents\ComponentLibrary;
 use Gang\WebComponents\TemplateFinder;
 use Gang\WebComponents\Helpers\Dom;
+use Gang\WebComponents\WebComponentController;
 
 class Renderer
 {
@@ -23,6 +24,7 @@ class Renderer
 
     public function render(HTMLComponent $htmlComponent) : string
     {
+        $controller  = WebComponentController::$instance;
         $fileContent = $this->templateFinder->find($htmlComponent);
         $context = get_object_vars($htmlComponent);
 
@@ -34,7 +36,10 @@ class Renderer
         if ($fileContent === componentLibrary::CONTENT_NOT_RENDERABLE) {
             return "";
         }
+
         $rendered = $this->templateRender->render($fileContent, $context);
+
+        $rendered = $controller->process($rendered);
         return $this->postRender($rendered, $htmlComponent);
     }
 
@@ -42,7 +47,6 @@ class Renderer
     {
         $dom = Dom::create();
         $element = Dom::elementFromString($dom, $rendered);
-
         $className = $component->class_name;
 
         if (!$className && isset($component->classname)) {

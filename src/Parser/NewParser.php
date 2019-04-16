@@ -77,7 +77,6 @@ class NewParser
 
   public function _startElementHandler($parser, $name, $attrs, $isSelfClose): void
   {
-
     if ($this->isWebComponent($name)) {
       $this->stackWebComponent($name, $attrs, $isSelfClose);
     } else {
@@ -89,7 +88,9 @@ class NewParser
   private function stackWebComponent($name, $attrs, $isSelfClose)
   {
     $webcomponent = new WebComponent($name, $attrs, $isSelfClose);
-
+    if($isSelfClose) {
+      $webcomponent->closeWebcomponent();
+    }
     $this->stack->push($webcomponent);
   }
 
@@ -110,14 +111,12 @@ class NewParser
     }
 
     if ($this->isWebComponent($name)) {
-
       if ($this->headIsFragment()) {
         $this->stack->moveHeadElementToStack($this->children_stack);
       }
 
       $element = $this->stack->peek();
-
-      while ($name !== $element->getTagName()) {
+      while ($element->isCloseWebComponent()) {
         $this->stack->moveHeadElementToStack($this->children_stack);
 
         if ($this->headIsFragment()) {
@@ -129,7 +128,7 @@ class NewParser
       $this->appendChildrenToWebComponent();
 
       $element->closeTag();
-
+      $element->closeWebcomponent();
     } else {
       $this->stackOrKeepFragment();
       $this->updateFragmentValue(TagMaker::getClosingTag($name));

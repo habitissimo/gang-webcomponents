@@ -13,6 +13,8 @@ use Psr\Log\LoggerInterface;
 
 class WebComponentController
 {
+    static  $instance;
+
     private $parser;
     private $renderer;
     private $factory;
@@ -30,6 +32,8 @@ class WebComponentController
         if (null !== $logger) {
             WebComponentLogger::setLogger($logger);
         }
+
+        self::$instance = $this;
     }
 
     /**

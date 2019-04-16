@@ -47,6 +47,7 @@ class NewParserTest extends TestCase
     $parser = $this->parser->parse($html);
     $webcomponent = new WebComponent("Div", [], false);
     $webcomponent->closeTag();
+    $webcomponent->closeWebcomponent();
 
     $this->assertEquals($webcomponent, $parser[0]);
   }
@@ -63,6 +64,7 @@ class NewParserTest extends TestCase
     $webcomponent = new WebComponent("Div", [], false);
     $webcomponent->appendChild(new Fragment("a content"));
     $webcomponent->closeTag();
+    $webcomponent->closeWebcomponent();
 
     $parser = $this->parser->parse($html);
 
@@ -75,8 +77,10 @@ class NewParserTest extends TestCase
     $parser = $this->parser->parse($html);
     $webcomponent = new WebComponent("Component", [], false);
     $webcomponent->closeTag();
+    $webcomponent->closeWebcomponent();
     $webcomponent1 = new WebComponent("OtherCOmponent", [], false);
     $webcomponent1->closeTag();
+    $webcomponent1->closeWebcomponent();
     $this->assertEquals([$webcomponent,$webcomponent1], $parser);
   }
 
@@ -84,7 +88,7 @@ class NewParserTest extends TestCase
     $html = "<Img/>";
     $parser = $this->parser->parse($html);
     $webcomponent = new WebComponent("Img", [], true);
-
+    $webcomponent->closeWebcomponent();
     $this->assertEquals($webcomponent, $parser[0]);
   }
 
@@ -109,6 +113,7 @@ class NewParserTest extends TestCase
   {
     $webcomponet =   new WebComponent("Button", [], false);
     $webcomponet->closeTag();
+    $webcomponet->closeWebcomponent();
 
     $this->assertEquals([
       new Fragment("<html><a>asasasasas</a>asdasdasdasdasd>"),
@@ -129,6 +134,8 @@ class NewParserTest extends TestCase
 
     $webcomponent = new WebComponent( "Alert", ["type" => "error"], false);
     $webcomponent->closeTag();
+    $webcomponent->closeWebcomponent();
+
     $this->assertEquals([
       new Fragment('<html><p>holaquetal</p><img src="ssdas"/>'),
       $webcomponent,
@@ -142,10 +149,11 @@ class NewParserTest extends TestCase
 
     $webcomponent = new WebComponent("Alert", [], false);
     $selfClose = new WebComponent("Icon",[], true);
-
+    $selfClose->closeWebcomponent();
     $webcomponent->appendChild(new Fragment("<p>texto alerta</p>"));
     $webcomponent->appendChild($selfClose);
     $webcomponent->closeTag();
+    $webcomponent->closeWebcomponent();
 
     $this->assertEquals([
       $webcomponent
@@ -161,7 +169,10 @@ class NewParserTest extends TestCase
     $input = (new Webcomponent( "Input", [], false));
 
     $alert->closeTag();
+    $alert->closeWebcomponent();
     $input->closeTag();
+    $input->closeWebcomponent();
+
 
     $this->assertEquals([
       new Fragment('<html>'),
@@ -177,7 +188,7 @@ class NewParserTest extends TestCase
     $input = '<Alert content="<b>Hello</b>"/><html>';
 
     $webcomponent =  new WebComponent( "Alert", ["content" => "<b>Hello</b>"], true);
-
+    $webcomponent->closeWebcomponent();
     $this->assertEquals([
       $webcomponent,
       new Fragment('<html>')
@@ -201,22 +212,28 @@ class NewParserTest extends TestCase
     $Button_2 =  new WebComponent( "Button", [], false);
 
     $Button_1->closeTag();
+    $Button_1->closeWebcomponent();
     $Div_1->appendChild($Button_1);
 
 
     $Button_2->closeTag();
+    $Button_2->closeWebcomponent();
     $Aside->appendChild($Button_2);
     $Aside->closeTag();
+    $Aside->closeWebcomponent();
     $Div_2->appendChild($Aside);
 
     $Div_1->closeTag();
+    $Div_1->closeWebcomponent();
     $Div_2->closeTag();
+    $Div_2->closeWebcomponent();
 
     $Html->appendChild($Div_1);
     $Html->appendChild($Div_2);
 
 
     $Html->closeTag();
+    $Html->closeWebcomponent();
     $this->parser->parse($inputText);
 
     $this->assertEquals([
