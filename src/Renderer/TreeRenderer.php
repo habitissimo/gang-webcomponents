@@ -26,7 +26,7 @@ class TreeRenderer
   {
     $this->postOrderTraverse($component);
     $htmlComponent = $this->factory->create($component);
-    $rendered = $this->renderer->render($htmlComponent);
+    $rendered = $htmlComponent->render($this->renderer);
     return $rendered;
   }
 
@@ -43,8 +43,7 @@ class TreeRenderer
       if ($child instanceof WebComponent) {
         $this->postOrderTraverse($child);
         $html_component = $this->factory->create($child);
-
-        $buffer->append($this->renderer->render($html_component));
+        $buffer->append($html_component->render($this->renderer));
       } else {
         $buffer->append((string) $child);
       }

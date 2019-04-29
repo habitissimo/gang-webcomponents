@@ -2,11 +2,15 @@
 declare(strict_types=1);
 namespace Gang\WebComponents;
 
+
+use Doctrine\Common\Cache\CacheProvider;
 use Gang\WebComponents\Exceptions\TemplateFileNotFound;
 use Symfony\Component\Finder\Finder;
 use Gang\WebComponents\Exceptions\ComponentClassNotFound;
 use Gang\WebComponents\Helpers\File;
 use Gang\WebComponents\Logger\WebComponentLogger as Log;
+
+
 
 class ComponentLibrary
 {
@@ -18,23 +22,51 @@ class ComponentLibrary
     public const COMPONENT_TEMPLATE_PATH = 'component_template_path';
 
     private $library = [];
+    private $cacheDriver;
+    private const ID_CACHE = 'component_cache';
+
+    public function __construct(CacheProvider $cacheDriver)
+    {
+      $this->cacheDriver = $cacheDriver;
+    }
 
     public function loadLibrary(string $base_namespace, ?string $template_dir = null) : void
     {
-        // Need it because the finder has to be refresh each use
-        $this->finder = new Finder();
-        $template_dir = $this->standarizeTemplateDir($base_namespace, $template_dir);
-        $this->finder->files()->name('*'.'.php')->in($template_dir);
+      // Need it because the finder has to be refresh each use
+      foreach ($this->saveInCache($base_namespace, $template_dir) as $route => $component) {
+        $relative_path = File::getRelativePath($route, $template_dir);
+        $relative_dir = File::getRelativeDir($relative_path);
+        $namespace_extension = File::getNameSpaceFromFolder($relative_dir);
+        $this->library[$component][self::KEY_FILE] = $route;
+        $this->library[$component][self::KEY_NAMESPACE] = $base_namespace.$namespace_extension;
+        $this->library[$component][self::COMPONENT_FOLDER] = $template_dir;
+      }
+    }
+
+    public function saveInCache(string $base_namespace, ?string $template_dir = null) : array
+    {
+      if (!$this->cacheDriver->contains(self::ID_CACHE)) {
+        $componentList = $this->findComponentsFiles($base_namespace, $template_dir);
+        $this->cacheDriver->save(self::ID_CACHE, $componentList, 900);
+      }
+      return $this->cacheDriver->fetch(self::ID_CACHE);
+    }
+
+    private function findComponentsFiles(string $base_namespace, ?string $template_dir = null)
+    {
+      $template_dir = $this->standarizeTemplateDir($base_namespace, $template_dir);
+
+        $finder = new Finder();
+        $finder->files()->name('*' . '.php')->in($template_dir);
         Log::debug('[Library@load] Looking in ' . $template_dir . ' for web components');
-        foreach ($this->finder as $route => $file) {
-            $component = (str_replace('.php', "", $file->getFilename()));
-            $relative_path = File::getRelativePath($route, $template_dir);
-            $relative_dir = File::getRelativeDir($relative_path);
-            $namespace_extension = File::getNameSpaceFromFolder($relative_dir);
-            $this->library[$component][self::KEY_FILE] = $route;
-            $this->library[$component][self::KEY_NAMESPACE] = $base_namespace.$namespace_extension;
-            $this->library[$component][self::COMPONENT_FOLDER] = $template_dir;
+
+        $map = [];
+        foreach ($finder as $path => $file) {
+          $map[$path] = basename($path, ".php");
         }
+
+        return $map;
+
     }
 
     public function getLibrary() : array

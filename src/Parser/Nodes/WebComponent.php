@@ -32,6 +32,11 @@ class WebComponent implements NodeInterface
 
   public function __toString() : string
   {
+    return $this->getOuterHtml();
+  }
+
+  public function getOuterHtml() : string
+  {
     return $this->outerHtml;
   }
 

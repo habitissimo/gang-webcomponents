@@ -35,9 +35,9 @@ class NewParser
   public function parse(string $html): array
   {
     $this->reset();
+    $html = preg_replace("/<[ ]*\/[ ]*script[ ]*>/","</script>", $html );
     $this->parser->parse($html);
     $this->saveResponse();
-
     return $this->response;
   }
 
@@ -77,6 +77,15 @@ class NewParser
 
   public function _startElementHandler($parser, $name, $attrs, $isSelfClose): void
   {
+    if ($name === "script" && !isset($attrs['src'])) {
+      $script = $parser->state_parser->scanUntilString("</script>");
+      $this->stackOrKeepFragment();
+      $this->updateFragmentValue(TagMaker::getOpeningTag($name, $attrs));
+      $this->updateFragmentValue($script);
+      $parser->state_parser->state = 1;
+      return;
+    }
+
     if ($this->isWebComponent($name)) {
       $this->stackWebComponent($name, $attrs, $isSelfClose);
     } else {

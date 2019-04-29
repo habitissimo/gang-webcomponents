@@ -26,6 +26,7 @@ class Renderer
     {
         $controller  = WebComponentController::$instance;
         $fileContent = $this->templateFinder->find($htmlComponent);
+
         $context = get_object_vars($htmlComponent);
 
         $context['children'] = $context['innerHtml'];
@@ -49,12 +50,8 @@ class Renderer
         $element = Dom::elementFromString($dom, $rendered);
         $className = $component->class_name;
 
-        if (!$className && isset($component->classname)) {
-          $className = $component->class_name;
-        }
-
-        if ($className && empty($element->getAttribute("class"))) {
-            $element->setAttribute('class', $className);
+        if($className){
+          $this->addClassAtributesNotYetAdded($className, $element);
         }
 
         /*
@@ -72,5 +69,13 @@ class Renderer
         }
 
         return Dom::elementToString($dom, $element);
+    }
+
+    private function addClassAtributesNotYetAdded($className,$element)
+    {
+      $componentClassAttributes =  explode(" ",$element->getAttribute("class"));
+      $classNameAtributes = explode(" ",$className);
+      $classAtributesNoAddedYet = array_diff($classNameAtributes, $componentClassAttributes);
+      $element->setAttribute('class', $element->getAttribute("class") ." ". implode(" ", $classAtributesNoAddedYet));
     }
 }

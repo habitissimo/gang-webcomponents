@@ -9,28 +9,22 @@ class Dom
       return new \DOMDocument();
     }
 
+
+
+    // When $html value contains more than one element must be throw exception
+
     public static function elementFromString(\DOMDocument $dom, string $html)
     {
         libxml_use_internal_errors(true); // supress malformed html warnings
         $dom->substituteEntities = false;
-        $dom->loadHtml(utf8_decode($html), LIBXML_HTML_NOIMPLIED | LIBXML_NONET);
+        $dom->loadHtml(utf8_decode($html), LIBXML_HTML_NOIMPLIED | LIBXML_NONET | LIBXML_NOBLANKS);
         libxml_clear_errors();
         libxml_use_internal_errors(false); // restore normal behavior
         return $dom->childNodes[1];
     }
 
-    public static function xmlFromString(\DOMDocument $dom, string $html)
-    {
-      libxml_use_internal_errors(true); // supress malformed html warnings
-      $dom->substituteEntities = false;
-      $dom->loadXml(utf8_decode($html), LIBXML_NONET);
-      libxml_clear_errors();
-      libxml_use_internal_errors(false); // restore normal behavior
-      return $dom->firstChild;
-    }
-
     public static function elementToString(\DOMDocument $dom, $element)
     {
-      return str_replace("\n","",$dom->saveHtml($element));
+      return $dom->saveHtml($element);
     }
 }

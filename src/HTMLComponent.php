@@ -95,4 +95,9 @@ abstract class HTMLComponent
     {
       return strpos($attrName, "data-") === 0;
     }
+
+    public function render($renderer)
+    {
+      return $renderer->render($this);
+    }
 }
