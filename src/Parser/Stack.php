@@ -43,6 +43,6 @@ class Stack
     }
 
     public function moveHeadElementToStack(Stack $stack){
-      $stack  ->unshift($this->pop());
+      $stack->unshift($this->pop());
     }
 }

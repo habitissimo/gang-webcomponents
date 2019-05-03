@@ -3,24 +3,16 @@ declare(strict_types=1);
 
 namespace Gang\WebComponentsTests;
 
-use Gang\WebComponents\Parser\NewParser;
-use Gang\WebComponents\WebComponentController;
-use Gang\WebComponents\HTMLComponent;
-use Gang\WebComponents\HTMLComponentFactory;
+use Doctrine\Common\Cache\FilesystemCache;
 use Gang\WebComponents\ComponentLibrary;
-use Gang\WebComponents\Parser\Nodes\Fragment;
-use Gang\WebComponents\Parser\Parser;
-use Gang\WebComponents\Parser\Nodes\WebComponent;
-use Gang\WebComponents\Renderer\Renderer;
+use Gang\WebComponents\HTMLComponentFactory;
+use Gang\WebComponents\Parser\NewParser;
 use Gang\WebComponents\Renderer\TreeRenderer;
-use Gang\WebComponentsTests\WebComponents\Button\Button;
+use Gang\WebComponents\WebComponentController;
+use PHPUnit\Framework\TestCase;
+use Prophecy\Prophet;
 
 //use Habitissimo\Utils\Web\Src\Component\Button\Button;
-
-use PHPUnit\Framework\TestCase;
-
-use Prophecy\Prophet;
-use Prophecy\Argument;
 
 final class CoreTests extends TestCase
 {
@@ -57,7 +49,7 @@ final class CoreTests extends TestCase
         $this->factory = $this->prophet->prophesize(HTMLComponentFactory::class);
 
 
-        $lib = new ComponentLibrary();
+        $lib = new ComponentLibrary( null);
         $lib->loadLibrary("Gang\WebComponentsTests\WebComponents", __DIR__ . DIRECTORY_SEPARATOR .  "WebComponents");
 
         $this->controller = new WebComponentController(
@@ -102,7 +94,7 @@ final class CoreTests extends TestCase
      */
     public function should_integrate_web_components() : void
     {
-        $lib = new ComponentLibrary();
+        $lib = new ComponentLibrary(null);
         $lib->loadLibrary("Gang\WebComponentsTests\WebComponents", __DIR__ . DIRECTORY_SEPARATOR .  "WebComponents");
         $controller = new WebComponentController(null, null, $lib);
         $parsed_template = $controller->process(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR .  "WebComponents" . DIRECTORY_SEPARATOR ."IntegrationTest.twig"));
@@ -123,6 +115,14 @@ final class CoreTests extends TestCase
   {
     $button = '<Button className="btn-outlined"></Button>';
     $result = $this->controller->process($button);
-    $this->assertEquals('<a role="button" class="btn-outlined"></a>', $result);
+    $this->assertEquals('<a role="button" class=" btn-outlined"></a>', $result);
+  }
+
+  public function testLink() : void
+  {
+    $link = "<link rel=\"preload\" href=\"/static/build/css/yantramanav.min.css?v=1556611503\" as=\"style\" onload=\"this.onload=null;this.rel=\" 'stylesheet'\">";
+
+    $result = $this->controller->process($link);
+    $this->assertEquals($link, $result);
   }
 }

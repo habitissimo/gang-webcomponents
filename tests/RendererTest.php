@@ -5,6 +5,8 @@ namespace Gang\WebComponentsTests;
 
 use Gang\WebComponents\Parser\Nodes\WebComponent;
 use Gang\WebComponents\Renderer\Renderer;
+use Gang\WebComponents\Renderer\TreeRenderer;
+use Gang\WebComponents\WebComponentController;
 use Gang\WebComponentsTests\WebComponents\Button\ShareSocial\TwitterShareSocialButton;
 use Gang\WebComponentsTests\WebComponents\Button\Button;
 use PHPUnit\Framework\TestCase;
@@ -15,20 +17,23 @@ use Prophecy\Argument;
 use Gang\WebComponents\Renderer\TwigTemplateRenderer;
 use Gang\WebComponents\HTMLComponent;
 
+
 class RendererTest extends TestCase
 {
     private $prophet;
     private $componentLibrary;
     private $templateRenderer;
     private $renderer;
+    private $controller;
 
-    public function setUp(): void
+  public function setUp(): void
     {
 
-        $this->prophet = new Prophet;
-        $this->componentLibrary = $this->prophet->prophesize(ComponentLibrary::class);
-        $this->templateRenderer = $this->prophet->prophesize(TemplateRendererInterface::class);
-        $this->renderer = new Renderer($this->templateRenderer->reveal(), $this->componentLibrary->reveal());
+      $this->prophet = new Prophet;
+      $this->componentLibrary = $this->prophet->prophesize(ComponentLibrary::class);
+      $this->templateRenderer = $this->prophet->prophesize(TemplateRendererInterface::class);
+      $this->renderer = new Renderer($this->templateRenderer->reveal(), $this->componentLibrary->reveal());
+      $this->controller = new WebComponentController(null, new TreeRenderer($this->componentLibrary->reveal()), $this->componentLibrary->reveal(), null);
     }
 
     public function testRenderComponent(): void
@@ -36,6 +41,7 @@ class RendererTest extends TestCase
         $buttonComponentClass = new class() extends HtmlComponent {};
         $button = new $buttonComponentClass();
         $class_name = get_class($button);
+
         $this->componentLibrary
             ->getTemplateContent($class_name, ".twig")
             ->willReturn("<p>a content</p>");

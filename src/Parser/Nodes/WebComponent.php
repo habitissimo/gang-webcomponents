@@ -20,6 +20,7 @@ class WebComponent implements NodeInterface
   private $name;
   private $attributes = [];
   private $innerHtml = '';
+  private $webInnerComponentHtml = '';
   private $children = [];
   private $isCloseWebComponent = false;
 
@@ -70,6 +71,7 @@ class WebComponent implements NodeInterface
     $this->children[] = $child;
     $this->appendOuterHtml($child->__toString());
     $this->appendInnerHtml($child->__toString());
+    $this->appendWebComponentInnerHtml($child->__toString());
   }
 
   public function setInnerHtml(string $innerHtml): void
@@ -87,9 +89,19 @@ class WebComponent implements NodeInterface
     $this->isCloseWebComponent = true;
   }
 
+  public function getWebComponentInnerHtml()
+  {
+    return $this->webInnerComponentHtml;
+  }
+
   private function appendInnerHtml($value) : void
   {
     $this->innerHtml .= $value;
+  }
+
+  private function appendWebComponentInnerHtml($value) : void
+  {
+    $this->webInnerComponentHtml .= $value;
   }
 
   private function appendOuterHtml($value) : void

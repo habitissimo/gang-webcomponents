@@ -14,26 +14,6 @@ class Buffer
         $this->content[] = $value;
     }
 
-    public function appendOpeningXmlTag(string $name, array $attrs=[], $selfClosing=false): void
-    {
-        $tag = '<';
-        $tag .= $name;
-
-        foreach ($attrs as $attr => $value) {
-            $safe_value = addslashes($value);
-            $tag.=  " {$attr}=\"{$safe_value}\"";
-        }
-
-        $tag .= $selfClosing ? '/>' : '>';
-
-        $this->append($tag);
-    }
-
-    public function appendClosingXmlTag($name): void
-    {
-        $this->append("</{$name}>");
-    }
-
     public function read(): string
     {
         $value = implode('', $this->content);

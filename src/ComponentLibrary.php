@@ -25,48 +25,21 @@ class ComponentLibrary
     private $cacheDriver;
     private const ID_CACHE = 'component_cache';
 
-    public function __construct(CacheProvider $cacheDriver)
+    public function __construct(?CacheProvider $cacheDriver =  null)
     {
       $this->cacheDriver = $cacheDriver;
     }
 
-    public function loadLibrary(string $base_namespace, ?string $template_dir = null) : void
+    public function loadLibrary(string $base_namespace, string $template_dir) : void
     {
-      // Need it because the finder has to be refresh each use
-      foreach ($this->saveInCache($base_namespace, $template_dir) as $route => $component) {
-        $relative_path = File::getRelativePath($route, $template_dir);
-        $relative_dir = File::getRelativeDir($relative_path);
-        $namespace_extension = File::getNameSpaceFromFolder($relative_dir);
-        $this->library[$component][self::KEY_FILE] = $route;
-        $this->library[$component][self::KEY_NAMESPACE] = $base_namespace.$namespace_extension;
-        $this->library[$component][self::COMPONENT_FOLDER] = $template_dir;
+      $safe_base_namespace =  $this->getSafePath($base_namespace);
+      $safe_template_dir =  $this->getSafePath($template_dir);
+
+      if($this->cacheDriver){
+        $this->addComponentsToLibrary("saveInCache", $safe_base_namespace, $template_dir);
+      }else{
+        $this->addComponentsToLibrary("findComponentsFiles", $safe_base_namespace, $safe_template_dir);
       }
-    }
-
-    public function saveInCache(string $base_namespace, ?string $template_dir = null) : array
-    {
-      if (!$this->cacheDriver->contains(self::ID_CACHE)) {
-        $componentList = $this->findComponentsFiles($base_namespace, $template_dir);
-        $this->cacheDriver->save(self::ID_CACHE, $componentList, 900);
-      }
-      return $this->cacheDriver->fetch(self::ID_CACHE);
-    }
-
-    private function findComponentsFiles(string $base_namespace, ?string $template_dir = null)
-    {
-      $template_dir = $this->standarizeTemplateDir($base_namespace, $template_dir);
-
-        $finder = new Finder();
-        $finder->files()->name('*' . '.php')->in($template_dir);
-        Log::debug('[Library@load] Looking in ' . $template_dir . ' for web components');
-
-        $map = [];
-        foreach ($finder as $path => $file) {
-          $map[$path] = basename($path, ".php");
-        }
-
-        return $map;
-
     }
 
     public function getLibrary() : array
@@ -94,38 +67,6 @@ class ComponentLibrary
         return $this->getTemplateContent($component_name, $extension, $path) ;
     }
 
-    private function standarizeTemplateDir(string $base_namespace, ?string $template_dir = null) : string
-    {
-        if (null === $template_dir) {
-            $template_dir = str_replace('\\', DIRECTORY_SEPARATOR, $base_namespace);
-            Log::debug('[Library@load] No template dir specified. Using ' . $template_dir . ' as dir');
-        }
-        if (substr($template_dir, -1, 1) === '/') {
-            $template_dir = substr($template_dir, 0, -1);
-        }
-        return $template_dir;
-    }
-
-    private function checkComponentInLibrary(string $component_name, ?string $msg = null)
-    {
-        if (!array_key_exists($component_name, $this->library)) {
-            if (null !== $msg) {
-                Log::error($msg);
-            }
-            throw new ComponentClassNotFound($component_name);
-        }
-    }
-
-    private function checkTemplateFolderInLibrary(string $template_path, ?string $msg = null)
-    {
-        if (!file_exists($template_path)) {
-            if (null !== $msg) {
-                Log::error($msg);
-            }
-            throw new TemplateFileNotFound($template_path);
-        }
-    }
-
     public function getComponentPath(string $component_name, string $extension, ?string $template_path = null)
     {
         if (null === $template_path) {
@@ -140,6 +81,52 @@ class ComponentLibrary
         $this->addTemplateFileToWebComponent($component, $filePath);
     }
 
+    private function getSafePath($path) {
+      if(substr($path, -1)==="\\" ||  substr($path, -1)==="/") {
+       return substr_replace($path, "",  -1);
+      }
+      return $path;
+    }
+
+    private function addComponentsToLibrary($call_method, $base_namespace, $template_dir)
+    {
+      // Need it because the finder has to be refresh each use
+      foreach ($this->{$call_method}($base_namespace, $template_dir) as $route => $component) {
+        $relative_path = File::getRelativePath($route, $template_dir);
+        $relative_dir = File::getRelativeDir($relative_path);
+        $namespace_extension = File::getNameSpaceFromFolder($relative_dir);
+        $this->library[$component][self::KEY_FILE] = $route;
+        $this->library[$component][self::KEY_NAMESPACE] = $base_namespace.$namespace_extension;
+        $this->library[$component][self::COMPONENT_FOLDER] = $template_dir;
+      }
+
+    }
+
+    private function saveInCache(string $base_namespace, string $template_dir) : array
+    {
+      if (!$this->cacheDriver->contains(self::ID_CACHE)) {
+        $componentList = $this->findComponentsFiles($base_namespace, $template_dir);
+        $this->cacheDriver->save(self::ID_CACHE, $componentList, 900);
+      }
+      return $this->cacheDriver->fetch(self::ID_CACHE);
+    }
+
+    private function findComponentsFiles(string $base_namespace, string $template_dir)
+    {
+      $template_dir = $this->standarizeTemplateDir($base_namespace, $template_dir);
+
+      $finder = new Finder();
+      $finder->files()->name('*' . '.php')->in($template_dir);
+      Log::debug('[Library@load] Looking in ' . $template_dir . ' for web components');
+
+      $map = [];
+      foreach ($finder as $path => $file) {
+        $map[$path] = basename($path, ".php");
+      }
+
+      return $map;
+    }
+
     private function addTemplateFileToWebComponent(string $component, string $filePath)
     {
         $this->library[$component][self::COMPONENT_TEMPLATE_PATH] = $filePath;
@@ -148,5 +135,38 @@ class ComponentLibrary
     private function addTemplateToWebComponent(string $component, string $fileContent)
     {
         $this->library[$component][self::COMPONENT_TEMPLATE] = $fileContent;
+    }
+
+
+    private function standarizeTemplateDir(string $base_namespace, ?string $template_dir = null) : string
+    {
+      if (null === $template_dir) {
+        $template_dir = str_replace('\\', DIRECTORY_SEPARATOR, $base_namespace);
+        Log::debug('[Library@load] No template dir specified. Using ' . $template_dir . ' as dir');
+      }
+      if (substr($template_dir, -1, 1) === '/') {
+        $template_dir = substr($template_dir, 0, -1);
+      }
+      return $template_dir;
+    }
+
+    private function checkComponentInLibrary(string $component_name, ?string $msg = null)
+    {
+      if (!array_key_exists($component_name, $this->library)) {
+        if (null !== $msg) {
+          Log::error($msg);
+        }
+        throw new ComponentClassNotFound($component_name);
+      }
+    }
+
+    private function checkTemplateFolderInLibrary(string $template_path, ?string $msg = null)
+    {
+      if (!file_exists($template_path)) {
+        if (null !== $msg) {
+          Log::error($msg);
+        }
+        throw new TemplateFileNotFound($template_path);
+      }
     }
 }

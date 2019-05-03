@@ -1,7 +1,9 @@
 <?php
 namespace Gang\WebComponentsTests;
 
+use Doctrine\Common\Cache\FilesystemCache;
 use Gang\WebComponents\Parser\Nodes\Fragment;
+use Gang\WebComponents\WebComponentController;
 use PHPUnit\Framework\TestCase;
 use Gang\WebComponents\Parser\Nodes\WebComponent;
 use Gang\WebComponents\ComponentLibrary;
@@ -14,12 +16,13 @@ class TreeRendererTest extends TestCase
 
   protected function setUp()
   {
-    $library = new ComponentLibrary();
+    $library = new ComponentLibrary(null);
     $library->loadLibrary("Gang\WebComponentsTests\WebComponents", __DIR__ . DIRECTORY_SEPARATOR .  "WebComponents");
     $this->renderer =  new TreeRenderer(
       $library,
       new HTMLComponentFactory($library)
     );
+    new WebComponentController(null,  $this->renderer, $library, null);
   }
 
   public function testBasic()
@@ -109,7 +112,17 @@ class TreeRendererTest extends TestCase
   public function testWithComplexNestedChilds()
   {
 
-    $expected = '<div><div><a role="button">1</a><a role="button">2</a><a role="button">3</a><div><a role="button"></a></div></div><div><a role="button">4</a><a role="button">5</a><a role="button">6</a><div><a role="button"></a></div></div><div><a role="button">7</a><a role="button">8</a><a role="button">9</a><div><a role="button"></a></div></div></div>';
+    $expected = '<div>
+<div>
+<a role="button">1</a><a role="button">2</a><a role="button">3</a><div><a role="button"></a></div>
+</div>
+<div>
+<a role="button">4</a><a role="button">5</a><a role="button">6</a><div><a role="button"></a></div>
+</div>
+<div>
+<a role="button">7</a><a role="button">8</a><a role="button">9</a><div><a role="button"></a></div>
+</div>
+</div>';
     $structure = "<Div>
                     <Div>
                       <Button>1</Button>    

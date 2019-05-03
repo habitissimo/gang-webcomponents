@@ -2,14 +2,14 @@
 
 namespace Gang\WebComponentsTests;
 
-use Gang\WebComponents\TemplateFinder;
-use PHPUnit\Framework\TestCase;
-use Gang\WebComponentsTests\WebComponents\Button\ShareSocial\TwitterShareSocialButton;
-use Gang\WebComponentsTests\WebComponents\Button\ShareSocial\GoogleShareSocialButton;
-use Gang\WebComponentsTests\WebComponents\Button\Button;
 use Gang\WebComponents\ComponentLibrary;
-use Gang\WebComponents\Renderer\TwigTemplateRenderer;
 use Gang\WebComponents\Contracts\TemplateFolderInterface;
+use Gang\WebComponents\Renderer\TwigTemplateRenderer;
+use Gang\WebComponents\TemplateFinder;
+use Gang\WebComponentsTests\WebComponents\Button\Button;
+use Gang\WebComponentsTests\WebComponents\Button\ShareSocial\GoogleShareSocialButton;
+use Gang\WebComponentsTests\WebComponents\Button\ShareSocial\TwitterShareSocialButton;
+use PHPUnit\Framework\TestCase;
 
 class TemplateFinderTest extends TestCase
 {
@@ -24,7 +24,7 @@ class TemplateFinderTest extends TestCase
 
     public function setUp(): void
     {
-        $lib = new ComponentLibrary();
+        $lib = new ComponentLibrary(null);
         $lib->loadLibrary("Gang\WebComponentsTests\WebComponents", __DIR__ . DIRECTORY_SEPARATOR .  "WebComponents");
 
         $this->templateFinder = new TemplateFinder(new TwigTemplateRenderer(), $lib);

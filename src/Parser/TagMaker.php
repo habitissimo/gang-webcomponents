@@ -13,8 +13,8 @@ class TagMaker
 
     foreach ($attrs as $attr => $value) {
       if ($value){
-        $safe_value = addslashes($value);
-        $tag.=  " {$attr}=\"{$safe_value}\"";
+        $quote = (new self)->getMoreAppropriateQuotes($value);
+        $tag.=  " {$attr}={$quote}{$value}{$quote}";
       }else{
         $tag.=  " {$attr}";
       }
@@ -28,5 +28,10 @@ class TagMaker
   static function getClosingTag($name): string
   {
     return "</{$name}>";
+  }
+
+  private function getMoreAppropriateQuotes($value)
+  {
+    return strpos($value, "\"") ? '\'' : "\"";
   }
 }

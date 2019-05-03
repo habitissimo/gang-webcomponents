@@ -11,7 +11,7 @@ class TwigTemplateRenderer implements TemplateRendererInterface
     {
         $loader = new \Twig_Loader_Filesystem(__DIR__);
         log::debug('Twig environment created');
-        $env = new \Twig_Environment($loader);
+        $env = new \Twig_Environment($loader, ['cache' => __DIR__ .  "twigCache"]);
         $template = $env->createTemplate($fileContent, $context);
         $rendered = $template->render($context);
         Log::debug('[TwigRenderer] rendered to: '.$rendered);
