@@ -4,15 +4,24 @@ declare(strict_types=1);
 namespace Gang\WebComponentsTests;
 
 use Doctrine\Common\Cache\FilesystemCache;
-use Gang\WebComponents\ComponentLibrary;
-use Gang\WebComponents\HTMLComponentFactory;
 use Gang\WebComponents\Parser\NewParser;
-use Gang\WebComponents\Renderer\TreeRenderer;
 use Gang\WebComponents\WebComponentController;
-use PHPUnit\Framework\TestCase;
-use Prophecy\Prophet;
+use Gang\WebComponents\HTMLComponent;
+use Gang\WebComponents\HTMLComponentFactory;
+use Gang\WebComponents\ComponentLibrary;
+use Gang\WebComponents\Parser\Nodes\Fragment;
+use Gang\WebComponents\Parser\Parser;
+use Gang\WebComponents\Parser\Nodes\WebComponent;
+use Gang\WebComponents\Renderer\Renderer;
+use Gang\WebComponents\Renderer\TreeRenderer;
+use Gang\WebComponentsTests\WebComponents\Button\Button;
 
 //use Habitissimo\Utils\Web\Src\Component\Button\Button;
+
+use PHPUnit\Framework\TestCase;
+
+use Prophecy\Prophet;
+use Prophecy\Argument;
 
 final class CoreTests extends TestCase
 {
@@ -53,9 +62,7 @@ final class CoreTests extends TestCase
         $lib->loadLibrary("Gang\WebComponentsTests\WebComponents", __DIR__ . DIRECTORY_SEPARATOR .  "WebComponents");
 
         $this->controller = new WebComponentController(
-            $this->parser,
-          $this->renderer = new TreeRenderer($lib),
-          $lib
+          $lib, $this->renderer = new TreeRenderer($lib), $this->parser
         );
     }
 
@@ -96,7 +103,7 @@ final class CoreTests extends TestCase
     {
         $lib = new ComponentLibrary(null);
         $lib->loadLibrary("Gang\WebComponentsTests\WebComponents", __DIR__ . DIRECTORY_SEPARATOR .  "WebComponents");
-        $controller = new WebComponentController(null, null, $lib);
+        $controller = new WebComponentController($lib);
         $parsed_template = $controller->process(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR .  "WebComponents" . DIRECTORY_SEPARATOR ."IntegrationTest.twig"));
         $this->assertEquals($this->integrationHtmlResult,$parsed_template);
     }

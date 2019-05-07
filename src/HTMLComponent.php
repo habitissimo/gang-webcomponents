@@ -4,7 +4,6 @@ namespace Gang\WebComponents;
 
 use Gang\WebComponents\Exceptions\ComponentAttributeNotFound;
 use Gang\WebComponents\Helpers\Str;
-use Gang\WebComponents\Logger\WebComponentLogger as Log;
 use Gang\WebComponents\Parser\Nodes\WebComponent;
 
 abstract class HTMLComponent

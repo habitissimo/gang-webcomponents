@@ -3,19 +3,16 @@ declare(strict_types=1);
 
 namespace Gang\WebComponentsTests;
 
-use Gang\WebComponents\Parser\Nodes\WebComponent;
+use Gang\WebComponents\ComponentLibrary;
+use Gang\WebComponents\Contracts\TemplateRendererInterface;
+use Gang\WebComponents\HTMLComponent;
 use Gang\WebComponents\Renderer\Renderer;
 use Gang\WebComponents\Renderer\TreeRenderer;
 use Gang\WebComponents\WebComponentController;
 use Gang\WebComponentsTests\WebComponents\Button\ShareSocial\TwitterShareSocialButton;
-use Gang\WebComponentsTests\WebComponents\Button\Button;
 use PHPUnit\Framework\TestCase;
-use Gang\WebComponents\Contracts\TemplateRendererInterface;
-use Gang\WebComponents\ComponentLibrary;
-use Prophecy\Prophet;
 use Prophecy\Argument;
-use Gang\WebComponents\Renderer\TwigTemplateRenderer;
-use Gang\WebComponents\HTMLComponent;
+use Prophecy\Prophet;
 
 
 class RendererTest extends TestCase
@@ -33,7 +30,7 @@ class RendererTest extends TestCase
       $this->componentLibrary = $this->prophet->prophesize(ComponentLibrary::class);
       $this->templateRenderer = $this->prophet->prophesize(TemplateRendererInterface::class);
       $this->renderer = new Renderer($this->templateRenderer->reveal(), $this->componentLibrary->reveal());
-      $this->controller = new WebComponentController(null, new TreeRenderer($this->componentLibrary->reveal()), $this->componentLibrary->reveal(), null);
+      $this->controller = new WebComponentController($this->componentLibrary->reveal(), new TreeRenderer($this->componentLibrary->reveal()));
     }
 
     public function testRenderComponent(): void

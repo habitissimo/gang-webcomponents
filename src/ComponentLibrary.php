@@ -4,12 +4,11 @@ namespace Gang\WebComponents;
 
 
 use Doctrine\Common\Cache\CacheProvider;
-use Gang\WebComponents\Exceptions\TemplateFileNotFound;
-use Symfony\Component\Finder\Finder;
 use Gang\WebComponents\Exceptions\ComponentClassNotFound;
+use Gang\WebComponents\Exceptions\TemplateFileNotFound;
 use Gang\WebComponents\Helpers\File;
 use Gang\WebComponents\Logger\WebComponentLogger as Log;
-
+use Symfony\Component\Finder\Finder;
 
 
 class ComponentLibrary
@@ -23,11 +22,13 @@ class ComponentLibrary
 
     private $library = [];
     private $cacheDriver;
+    private $lifeTime;
     private const ID_CACHE = 'component_cache';
 
-    public function __construct(?CacheProvider $cacheDriver =  null)
+    public function __construct(?CacheProvider $cacheDriver = null, $lifeTime = 0)
     {
       $this->cacheDriver = $cacheDriver;
+      $this->lifeTime = $lifeTime;
     }
 
     public function loadLibrary(string $base_namespace, string $template_dir) : void
@@ -106,7 +107,7 @@ class ComponentLibrary
     {
       if (!$this->cacheDriver->contains(self::ID_CACHE)) {
         $componentList = $this->findComponentsFiles($base_namespace, $template_dir);
-        $this->cacheDriver->save(self::ID_CACHE, $componentList, 900);
+        $this->cacheDriver->save(self::ID_CACHE, $componentList, $this->lifeTime);
       }
       return $this->cacheDriver->fetch(self::ID_CACHE);
     }

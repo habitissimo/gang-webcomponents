@@ -24,7 +24,7 @@ class NewParser
 
   public static function isWebComponent(string $tagName): bool
   {
-    return preg_match("/^[A-Z].*/", $tagName) && ucfirst($tagName) === $tagName;
+    return ucfirst($tagName) === $tagName || preg_match("/^h-.*/", $tagName);
   }
 
   /**
@@ -110,7 +110,6 @@ class NewParser
     if ($this->stack->length() === 0 || $element instanceof WebComponent) {
       $this->stack->push(new Fragment(''));
     }
-
   }
 
   public function _endElementHandler($parser, $name, $isSelfClose): void

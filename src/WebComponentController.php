@@ -18,10 +18,7 @@ class WebComponentController
 
 
     public function __construct(
-        ?NewParser $parser=null,
-        ?TreeRenderer $renderer=null,
-        ?ComponentLibrary $library=null,
-        ?LoggerInterface $logger = null
+      ?ComponentLibrary $library = null, ?TreeRenderer $renderer = null, ?NewParser $parser = null, ?LoggerInterface $logger = null
     ) {
         $library = $library ?? new ComponentLibrary();
         $this->parser = $parser ?? new NewParser();

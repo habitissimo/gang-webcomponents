@@ -1,14 +1,13 @@
 <?php
 namespace Gang\WebComponentsTests;
 
-use Doctrine\Common\Cache\FilesystemCache;
+use Gang\WebComponents\ComponentLibrary;
+use Gang\WebComponents\HTMLComponentFactory;
 use Gang\WebComponents\Parser\Nodes\Fragment;
+use Gang\WebComponents\Parser\Nodes\WebComponent;
+use Gang\WebComponents\Renderer\TreeRenderer;
 use Gang\WebComponents\WebComponentController;
 use PHPUnit\Framework\TestCase;
-use Gang\WebComponents\Parser\Nodes\WebComponent;
-use Gang\WebComponents\ComponentLibrary;
-use Gang\WebComponents\Renderer\TreeRenderer;
-use Gang\WebComponents\HTMLComponentFactory;
 
 class TreeRendererTest extends TestCase
 {
@@ -16,13 +15,13 @@ class TreeRendererTest extends TestCase
 
   protected function setUp()
   {
-    $library = new ComponentLibrary(null);
+    $library = new ComponentLibrary();
     $library->loadLibrary("Gang\WebComponentsTests\WebComponents", __DIR__ . DIRECTORY_SEPARATOR .  "WebComponents");
     $this->renderer =  new TreeRenderer(
       $library,
       new HTMLComponentFactory($library)
     );
-    new WebComponentController(null,  $this->renderer, $library, null);
+    new WebComponentController($library, $this->renderer);
   }
 
   public function testBasic()

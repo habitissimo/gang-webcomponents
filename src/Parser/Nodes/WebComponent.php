@@ -5,10 +5,8 @@ namespace Gang\WebComponents\Parser\Nodes;
 
 use Gang\WebComponents\Contracts\NodeInterface;
 use Gang\WebComponents\Exceptions\ParserException;
-use Gang\WebComponents\Parser\InnerHTMLExtractor;
-use Gang\WebComponents\Parser\TagMaker;
 use Gang\WebComponents\Parser\Parser;
-use Gang\WebComponents\Helpers\Dom;
+use Gang\WebComponents\Parser\TagMaker;
 
 /**
  * Class WebComponent
@@ -26,7 +24,7 @@ class WebComponent implements NodeInterface
 
   public function __construct(string $name, array $attrs, bool $isSelfClose)
   {
-    $this->name = $name;
+    $this->name = $this->foo($name);
     $this->attributes = $attrs;
     $this->appendOuterHtml(TagMaker::getOpeningTag($name, $attrs, $isSelfClose));
   }
@@ -108,6 +106,16 @@ class WebComponent implements NodeInterface
   {
     $this->outerHtml .= $value;
   }
+
+  private function foo($tag_name){
+    if (preg_match("/^h-.*/", $tag_name)){
+      $replace = str_replace("h-", "", $tag_name);
+      return ucfirst($replace);
+    }else {
+      return $tag_name;
+    }
+  }
+
 
 
   /**
