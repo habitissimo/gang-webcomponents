@@ -108,9 +108,14 @@ class WebComponent implements NodeInterface
   }
 
   private function foo($tag_name){
-    if (preg_match("/^h-.*/", $tag_name)){
-      $replace = str_replace("h-", "", $tag_name);
-      return ucfirst($replace);
+    if (preg_match("/^wc-.*/", $tag_name)){
+        $replace = str_replace("wc-", "", $tag_name);
+        $withoutDelimiter = explode("-", $replace);
+        $component_name = "";
+        foreach ($withoutDelimiter as $value){
+          $component_name .= ucfirst($value);
+        }
+      return $component_name;
     }else {
       return $tag_name;
     }

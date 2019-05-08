@@ -24,7 +24,7 @@ class NewParser
 
   public static function isWebComponent(string $tagName): bool
   {
-    return ucfirst($tagName) === $tagName || preg_match("/^h-.*/", $tagName);
+    return ucfirst($tagName) === $tagName || preg_match("/^wc-.*/", $tagName);
   }
 
   /**
