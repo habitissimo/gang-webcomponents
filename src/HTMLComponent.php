@@ -54,7 +54,7 @@ abstract class HTMLComponent
         return self::__CLASS__;
     }
 
-    public function getTagNameComponent(){
+    public function getTagName(){
 
       return $this->webComponent->getTagname();
 

@@ -10,7 +10,7 @@ use Gang\WebComponents\Logger\WebComponentLogger as Log;
 
 class TemplateFinder
 {
-   
+
     private $lib;
     private $templateRender;
 
@@ -27,7 +27,7 @@ class TemplateFinder
     public function find(HTMLComponent $component) : string
     {
         // Defaults
-        $className = $component->getTagNameComponent();
+        $className = $component->getTagName();
         $fileContent = ComponentLibrary::CONTENT_NOT_RENDERABLE;
 
         $fileExtension = $this->templateRender->getFileExtension();
