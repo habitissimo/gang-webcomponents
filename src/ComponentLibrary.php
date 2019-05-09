@@ -19,6 +19,7 @@ class ComponentLibrary
     public const COMPONENT_FOLDER = 'component_folder';
     public const COMPONENT_TEMPLATE = 'component_template';
     public const COMPONENT_TEMPLATE_PATH = 'component_template_path';
+    public const COMPONENT_NAME = 'class_name_component';
 
     private $library = [];
     private $cacheDriver;
@@ -51,7 +52,7 @@ class ComponentLibrary
     public function getComponentClass(string $component_name) : string
     {
         $this->checkComponentInLibrary($component_name, '[ComponentLibrary@getComponentClass] Component class ' . $component_name . ' not found');
-        return $this->library[$component_name]['namespace'].'\\'.$component_name;
+        return ($this->library[$component_name][self::KEY_NAMESPACE].'\\'.$this->library[$component_name][self::COMPONENT_NAME]);
     }
 
     public function getTemplateContent(string $component_name, string $extension, ?string $template_path = null) : string
@@ -93,14 +94,16 @@ class ComponentLibrary
     {
       // Need it because the finder has to be refresh each use
       foreach ($this->{$call_method}($base_namespace, $template_dir) as $route => $component) {
+        $componentName = "wc-".strtolower(preg_replace("%([a-z])([A-Z])%",'\1-\2',$component));
         $relative_path = File::getRelativePath($route, $template_dir);
         $relative_dir = File::getRelativeDir($relative_path);
         $namespace_extension = File::getNameSpaceFromFolder($relative_dir);
-        $this->library[$component][self::KEY_FILE] = $route;
-        $this->library[$component][self::KEY_NAMESPACE] = $base_namespace.$namespace_extension;
-        $this->library[$component][self::COMPONENT_FOLDER] = $template_dir;
+        $class_name = File::getClassNameFromFile($route) ;
+        $this->library[$componentName][self::KEY_FILE] = $route;
+        $this->library[$componentName][self::KEY_NAMESPACE] = $base_namespace.$namespace_extension;
+        $this->library[$componentName][self::COMPONENT_FOLDER] = $template_dir;
+        $this->library[$componentName][self::COMPONENT_NAME] = $class_name;
       }
-
     }
 
     private function saveInCache(string $base_namespace, string $template_dir) : array

@@ -27,7 +27,7 @@ class TemplateFinder
     public function find(HTMLComponent $component) : string
     {
         // Defaults
-        $className = File::getClassFromNameSpace(get_class($component));
+        $className = $component->getTagNameComponent();
         $fileContent = ComponentLibrary::CONTENT_NOT_RENDERABLE;
 
         $fileExtension = $this->templateRender->getFileExtension();

@@ -54,6 +54,12 @@ abstract class HTMLComponent
         return self::__CLASS__;
     }
 
+    public function getTagNameComponent(){
+
+      return $this->webComponent->getTagname();
+
+    }
+
     public function setInnerHtml(string $html)
     {
         $this->innerHtml = $html;

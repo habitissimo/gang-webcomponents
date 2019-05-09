@@ -18,6 +18,21 @@ class File
         return substr($nameSpace, $t + 1);
     }
 
+  /**
+   * Example:
+   * $nameSpace = Habitissimo/Web/Components/Fragment/Fragment.php
+   * returned = Fragment
+   */
+  public static function getClassNameFromFile(string $pathClass) : string
+  {
+    $t = strrpos($pathClass, '/');
+
+    if(!$t){
+      return $pathClass;
+    }
+    return substr($pathClass, $t + 1, -4);
+  }
+
     /**
      * Example:
      * $fullPath = habitissimo/Navbar/Collapsable/CollapsableNavbar.php

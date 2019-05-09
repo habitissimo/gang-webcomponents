@@ -24,7 +24,7 @@ class WebComponent implements NodeInterface
 
   public function __construct(string $name, array $attrs, bool $isSelfClose)
   {
-    $this->name = $this->foo($name);
+    $this->name = $name;
     $this->attributes = $attrs;
     $this->appendOuterHtml(TagMaker::getOpeningTag($name, $attrs, $isSelfClose));
   }
@@ -106,22 +106,6 @@ class WebComponent implements NodeInterface
   {
     $this->outerHtml .= $value;
   }
-
-  private function foo($tag_name){
-    if (preg_match("/^wc-.*/", $tag_name)){
-        $replace = str_replace("wc-", "", $tag_name);
-        $withoutDelimiter = explode("-", $replace);
-        $component_name = "";
-        foreach ($withoutDelimiter as $value){
-          $component_name .= ucfirst($value);
-        }
-      return $component_name;
-    }else {
-      return $tag_name;
-    }
-  }
-
-
 
   /**
    * Function to handle errors from the DomDocument

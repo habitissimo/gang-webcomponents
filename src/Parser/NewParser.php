@@ -22,9 +22,9 @@ class NewParser
     $this->reset();
   }
 
-  public static function isWebComponent(string $tagName): bool
+  public static function isWebComponent(string $tagName)
   {
-    return ucfirst($tagName) === $tagName || preg_match("/^wc-.*/", $tagName);
+    return preg_match("/^wc-.*/", $tagName);
   }
 
   /**
