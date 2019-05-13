@@ -24,13 +24,12 @@ class Renderer
 
     public function render(HTMLComponent $htmlComponent) : string
     {
-        $controller  = WebComponentController::$instance;
-        $fileContent = $this->templateFinder->find($htmlComponent);
 
+//        $controller  = WebComponentController::$instance;
+        $fileContent = $this->templateFinder->find($htmlComponent);
         $context = get_object_vars($htmlComponent);
 
         $context['children'] = $context['innerHtml'];
-
         // In case that the content it couldn't be render return an empty string
         // So the HTML dosen't add anything
 
@@ -40,8 +39,8 @@ class Renderer
 
         $rendered = $this->templateRender->render($fileContent, $context);
 
-        $rendered = $controller->process($rendered);
-        return $this->postRender($rendered, $htmlComponent);
+//        $rendered = $controller->process($rendered);
+        return $rendered;
     }
 
     private function postRender(string $rendered, HTMLComponent $component)
