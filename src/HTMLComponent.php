@@ -19,9 +19,8 @@ abstract class HTMLComponent
     public $innerHtml;
     public $class_name;
 
-    public function __construct($class_name)
+    public function __construct()
     {
-      $this->class_name = $class_name;
       $this->dataAttributes = new AttributeHolder();
     }
 
@@ -36,6 +35,11 @@ abstract class HTMLComponent
           $this->setWithSetter($name, $value);
           return;
         }
+
+        if ($name === "classname"){
+          $this->class_name = $value;
+        }
+
 
         $attr_name = Str::snake($name);
         $this->{$attr_name} = $value;
@@ -103,17 +107,28 @@ abstract class HTMLComponent
       return strpos($attrName, "data-") === 0;
     }
 
-    public function render($renderer, $element = null,$dom = null, $factory =  null)
+    public function render($renderer, $element = null,$dom = null)
     {
       $this->innerHtml = implode(array_map([$dom, 'saveHtml'], iterator_to_array($element->childNodes)));
       $renderer_component = $renderer->render($this);
 
       $newDOM = Dom::domFromString($renderer_component);
       $dom_element_renderer = $newDOM->childNodes[1];
-
+      $this->addClassAtributesNotYetAdded($dom_element_renderer);
       $parent_node = $element->parentNode;
       $parent_node->replaceChild($dom->importNode($dom_element_renderer, true),$element);
 
       return $renderer->render($this);
     }
+
+    private function addClassAtributesNotYetAdded($element)
+    {
+      if($this->class_name){
+        $componentClassAttributes =  explode(" ",$element->getAttribute("class"));
+        $classNameAtributes = explode(" ",$this->class_name);
+        $classAtributesNoAddedYet = array_diff($classNameAtributes, $componentClassAttributes);
+        $element->setAttribute('class', $element->getAttribute("class") ." ". implode(" ", $classAtributesNoAddedYet));
+      }
+    }
+
 }

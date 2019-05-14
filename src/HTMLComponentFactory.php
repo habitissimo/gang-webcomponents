@@ -18,7 +18,7 @@ class HTMLComponentFactory
     {
         $class = $this->library->getComponentClass($element->nodeName);
 
-        $component = new $class($element->nodeName);
+        $component = new $class();
 
         $component->setDOMElement($element);
 
