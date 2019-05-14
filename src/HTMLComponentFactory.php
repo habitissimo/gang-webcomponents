@@ -14,24 +14,16 @@ class HTMLComponentFactory
         $this->library = $library;
     }
 
-    public function create(WebComponent $wc) : HTMLComponent
+    public function create(\DOMElement $element) : HTMLComponent
     {
-        $class = $this->library->getComponentClass($wc->getTagName());
+        $class = $this->library->getComponentClass($element->nodeName);
 
         $component = new $class();
-        $component->setWebComponent($wc);
-        foreach ($wc->getAttr() as $attr_name => $value) {
-            $component->__set($attr_name, $value);
-        }
+        $component->setDOMElement($element);
 
-        foreach ($wc->getChildren() as $child) {
-            if ($child instanceof WebComponent) {
-                $component->addChild($child);
-            }
-        }
 
-        if ($wc->getInnerHtml()) {
-            $component->setInnerHTML($wc->getInnerHtml());
+        foreach ($element->attributes as $attr) {
+          $component->__set($attr->nodeName, $attr->nodeValue);
         }
 
         // PreRender is a class-specific method

@@ -12,7 +12,7 @@ abstract class HTMLComponent
     protected $required_fields = [];
     protected $attributes = [];
     protected $childNodes = [];
-    protected $webComponent;
+    protected $DOMElement;
 
     public $dataAttributes;
     public $innerHtml;
@@ -44,9 +44,9 @@ abstract class HTMLComponent
         throw new ComponentAttributeNotFound($name, $this->getClassName());
     }
 
-    public function setWebComponent(WebComponent $webComponent)
+    public function setDOMElement(\DOMElement $element)
     {
-      $this->webComponent = $webComponent;
+      $this->DOMElement= $element;
     }
 
     public function getClassName()
@@ -56,7 +56,7 @@ abstract class HTMLComponent
 
     public function getTagName(){
 
-      return $this->webComponent->getTagname();
+      return $this->DOMElement->nodeName;
 
     }
 
@@ -101,7 +101,7 @@ abstract class HTMLComponent
       return strpos($attrName, "data-") === 0;
     }
 
-    public function render($renderer, $element = null, $xpath =  null)
+    public function render($renderer, $element = null, $factory =  null)
     {
       return $renderer->render($this);
     }

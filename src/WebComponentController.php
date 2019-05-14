@@ -65,34 +65,18 @@ class WebComponentController
 
 
   private function renderWC($dom_wc){
-    $wc = $this->createWebComponent($dom_wc);
 
-    $htmlComponent = $this->factory->create($wc);
+    $htmlComponent = $this->factory->create($dom_wc);
 
-    $renderer_component = $htmlComponent->render($this->render, $dom_wc, $this->xpath);
+    $renderer_component = $htmlComponent->render($this->render, $dom_wc, $this->dom, $this->factory);
 
     $DOM = Dom::domFromString($renderer_component);
 
     $dom_element_renderer = $DOM->childNodes[1];
 
-    foreach($dom_wc->childNodes as $child){
-      $dom_element_renderer->appendChild($DOM->importNode($child, true));
-    }
 
     $parent_node = $dom_wc->parentNode;
 
     $parent_node->replaceChild($this->dom->importNode($dom_element_renderer, true),$dom_wc);
-  }
-
-
-  private function createWebComponent ($dom_wc){
-    $attributes = [];
-    if ($dom_wc->hasAttributes()) {
-      foreach ($dom_wc->attributes as $attr) {
-        $attributes[$attr->nodeName] = $attr->nodeValue;
-      }
-    }
-    $wc = new WebComponent($dom_wc->nodeName, $attributes, false);
-    return $wc;
   }
 }
