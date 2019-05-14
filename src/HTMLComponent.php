@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Gang\WebComponents;
 
 use Gang\WebComponents\Exceptions\ComponentAttributeNotFound;
+use Gang\WebComponents\Helpers\Dom;
 use Gang\WebComponents\Helpers\Str;
 use Gang\WebComponents\Parser\Nodes\WebComponent;
 
@@ -18,8 +19,9 @@ abstract class HTMLComponent
     public $innerHtml;
     public $class_name;
 
-    public function __construct()
+    public function __construct($class_name)
     {
+      $this->class_name = $class_name;
       $this->dataAttributes = new AttributeHolder();
     }
 
@@ -101,8 +103,20 @@ abstract class HTMLComponent
       return strpos($attrName, "data-") === 0;
     }
 
-    public function render($renderer, $element = null, $factory =  null)
+    public function render($renderer, $element = null,$dom = null, $factory =  null)
     {
+      $renderer_component = $renderer->render($this);
+
+      $DOM = Dom::domFromString($renderer_component);
+      $dom_element_renderer = $DOM->childNodes[1];
+
+      foreach ($element->childNodes as $child){
+        $dom_element_renderer->appendChild($DOM->importNode($child, true));
+      }
+
+      $parent_node = $element->parentNode;
+      $parent_node->replaceChild($dom->importNode($dom_element_renderer, true),$element);
+
       return $renderer->render($this);
     }
 }

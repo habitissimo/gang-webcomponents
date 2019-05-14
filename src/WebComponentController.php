@@ -52,7 +52,8 @@ class WebComponentController
     $this->xpath = new \DOMXpath($this->dom);
     while($this->getNextWebComponent()){
       $webcomponent = $this->getNextWebComponent();
-      $this->renderWC($webcomponent);
+      $htmlComponent = $this->factory->create($webcomponent);
+      $htmlComponent->render($this->render, $webcomponent, $this->dom, $this->factory);
     };
     return $this->dom->saveHTML();
   }
@@ -66,17 +67,6 @@ class WebComponentController
 
   private function renderWC($dom_wc){
 
-    $htmlComponent = $this->factory->create($dom_wc);
 
-    $renderer_component = $htmlComponent->render($this->render, $dom_wc, $this->dom, $this->factory);
-
-    $DOM = Dom::domFromString($renderer_component);
-
-    $dom_element_renderer = $DOM->childNodes[1];
-
-
-    $parent_node = $dom_wc->parentNode;
-
-    $parent_node->replaceChild($this->dom->importNode($dom_element_renderer, true),$dom_wc);
   }
 }

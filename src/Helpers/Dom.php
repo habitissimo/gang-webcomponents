@@ -32,7 +32,7 @@ class Dom
     {
       libxml_use_internal_errors(true);
       $dom = new \DOMDocument();
-      $dom->loadHtml($html, LIBXML_HTML_NOIMPLIED | LIBXML_NONET | LIBXML_NOBLANKS );
+      $dom->loadHtml(utf8_decode($html), LIBXML_HTML_NOIMPLIED | LIBXML_NONET | LIBXML_NOBLANKS );
       libxml_get_errors();
       libxml_clear_errors();
       return $dom;
