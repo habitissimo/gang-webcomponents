@@ -105,14 +105,11 @@ abstract class HTMLComponent
 
     public function render($renderer, $element = null,$dom = null, $factory =  null)
     {
+      $this->innerHtml = implode(array_map([$dom, 'saveHtml'], iterator_to_array($element->childNodes)));
       $renderer_component = $renderer->render($this);
 
-      $DOM = Dom::domFromString($renderer_component);
-      $dom_element_renderer = $DOM->childNodes[1];
-
-      foreach ($element->childNodes as $child){
-        $dom_element_renderer->appendChild($DOM->importNode($child, true));
-      }
+      $newDOM = Dom::domFromString($renderer_component);
+      $dom_element_renderer = $newDOM->childNodes[1];
 
       $parent_node = $element->parentNode;
       $parent_node->replaceChild($dom->importNode($dom_element_renderer, true),$element);

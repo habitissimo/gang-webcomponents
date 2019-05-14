@@ -5,10 +5,7 @@ namespace Gang\WebComponents;
 
 use Gang\WebComponents\Helpers\Dom;
 use Gang\WebComponents\Logger\WebComponentLogger;
-use Gang\WebComponents\Logger\WebComponentLogger as Log;
 use Gang\WebComponents\Parser\NewParser;
-use Gang\WebComponents\Parser\Nodes\Fragment;
-use Gang\WebComponents\Parser\Nodes\WebComponent;
 use Gang\WebComponents\Renderer\Renderer;
 use Gang\WebComponents\Renderer\TreeRenderer;
 use Gang\WebComponents\Renderer\TwigTemplateRenderer;
@@ -50,23 +47,20 @@ class WebComponentController
   {
     $this->dom = Dom::domFromString($content);
     $this->xpath = new \DOMXpath($this->dom);
-    while($this->getNextWebComponent()){
-      $webcomponent = $this->getNextWebComponent();
-      $htmlComponent = $this->factory->create($webcomponent);
-      $htmlComponent->render($this->render, $webcomponent, $this->dom, $this->factory);
+    $web_components = $this->getWebComponents();
+    while($web_components){
+      foreach ($web_components as $webcomponent){
+        $htmlComponent = $this->factory->create($webcomponent);
+        $htmlComponent->render($this->render, $webcomponent, $this->dom, $this->factory);
+      }
+      $web_components = $this->getWebComponents();
     };
     return $this->dom->saveHTML();
   }
 
 
-  private function getNextWebComponent()
+  private function getWebComponents()
   {
-    return $this->xpath->query("//*[starts-with(local-name(), 'wc-')]")[0];
-  }
-
-
-  private function renderWC($dom_wc){
-
-
+    return array_reverse(iterator_to_array($this->xpath->query("//*[starts-with(local-name(), 'wc-')]")));;
   }
 }
