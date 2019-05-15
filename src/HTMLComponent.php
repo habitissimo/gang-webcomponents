@@ -110,8 +110,12 @@ abstract class HTMLComponent
     public function render($renderer, $element = null,$dom = null)
     {
       $this->innerHtml = implode(array_map([$dom, 'saveHtml'], iterator_to_array($element->childNodes)));
-      $renderer_component = $renderer->render($this);
+      return $this->renderElement($renderer, $element, $dom);
+    }
 
+    protected function renderElement($renderer, $element = null, $dom = null)
+    {
+      $renderer_component = $renderer->render($this);
       $newDOM = Dom::domFromString($renderer_component);
       $dom_element_renderer = $newDOM->childNodes[1];
       $this->addClassAtributesNotYetAdded($dom_element_renderer);
@@ -121,7 +125,7 @@ abstract class HTMLComponent
       return $renderer->render($this);
     }
 
-    private function addClassAtributesNotYetAdded($element)
+    protected function addClassAtributesNotYetAdded($element)
     {
       if($this->class_name){
         $componentClassAttributes =  explode(" ",$element->getAttribute("class"));

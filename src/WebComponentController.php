@@ -49,6 +49,7 @@ class WebComponentController
     $this->xpath = new \DOMXpath($this->dom);
     $web_components = $this->getWebComponents();
     while($web_components){
+
       foreach ($web_components as $webcomponent){
         $htmlComponent = $this->factory->create($webcomponent);
         $htmlComponent->render($this->render, $webcomponent, $this->dom);
