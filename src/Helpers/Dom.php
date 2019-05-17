@@ -28,11 +28,11 @@ class Dom
       return $dom->saveHtml($element);
     }
 
-    public STATIC function domFromString(string $html)
+    public static function domFromString(string $html)
     {
       libxml_use_internal_errors(true);
       $dom = new \DOMDocument();
-      $dom->loadHtml(utf8_decode($html), LIBXML_HTML_NOIMPLIED | LIBXML_NONET | LIBXML_NOBLANKS );
+      $dom->loadHtml(utf8_decode($html), LIBXML_HTML_NOIMPLIED | LIBXML_NONET);
       libxml_get_errors();
       libxml_clear_errors();
       return $dom;

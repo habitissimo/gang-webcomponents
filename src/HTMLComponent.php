@@ -12,8 +12,8 @@ abstract class HTMLComponent
     protected $template;
     protected $required_fields = [];
     protected $attributes = [];
-    protected $childNodes = [];
-    protected $DOMElement;
+    public $childNodes = [];
+    public $DOMElement;
 
     public $dataAttributes;
     public $innerHtml;
@@ -50,7 +50,7 @@ abstract class HTMLComponent
         throw new ComponentAttributeNotFound($name, $this->getClassName());
     }
 
-    public function setDOMElement(\DOMElement $element)
+    public function setDOMElement(\DOMNode $element)
     {
       $this->DOMElement= $element;
     }
@@ -107,25 +107,21 @@ abstract class HTMLComponent
       return strpos($attrName, "data-") === 0;
     }
 
-    public function render($renderer, $element = null,$dom = null)
+    public function render($renderer, $dom = null, $factory =  null)
     {
-      $this->innerHtml = implode(array_map([$dom, 'saveHtml'], iterator_to_array($element->childNodes)));
-      return $this->renderElement($renderer, $element, $dom);
+      foreach ($this->DOMElement->childNodes as $child) {
+        if ($this->isWebComponent($child)) {
+          $element =  $factory->create($child);
+          $this->innerHtml .= $element->render($renderer, $dom, $factory)["render_content"];
+        }else {
+          $this->innerHtml .= $dom->saveHTML($child);
+        }
+      }
+
+      return ["render_content" => $renderer->render($this), "HTMLComponent" => $this];
     }
 
-    protected function renderElement($renderer, $element = null, $dom = null)
-    {
-      $renderer_component = $renderer->render($this);
-      $newDOM = Dom::domFromString($renderer_component);
-      $dom_element_renderer = $newDOM->childNodes[1];
-      $this->addClassAtributesNotYetAdded($dom_element_renderer);
-      $parent_node = $element->parentNode;
-      $parent_node->replaceChild($dom->importNode($dom_element_renderer, true),$element);
-
-      return $renderer->render($this);
-    }
-
-    protected function addClassAtributesNotYetAdded($element)
+    public function addClassAtributesNotYetAdded($element)
     {
       if($this->class_name){
         $componentClassAttributes =  explode(" ",$element->getAttribute("class"));
@@ -133,6 +129,10 @@ abstract class HTMLComponent
         $classAtributesNoAddedYet = array_diff($classNameAtributes, $componentClassAttributes);
         $element->setAttribute('class', $element->getAttribute("class") ." ". implode(" ", $classAtributesNoAddedYet));
       }
+    }
+
+    private function isWebComponent (\DomNode $element) {
+      return substr($element->nodeName,0,3)=== "wc-";
     }
 
 }
