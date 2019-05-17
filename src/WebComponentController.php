@@ -23,7 +23,7 @@ class WebComponentController
   private $dom;
   private $xpath;
   private $HTMLComponents = [];
-  private $parentComponent;
+  private $isChildWebComponent =  false;
 
   public function __construct(
     ?ComponentLibrary $library = null, ?TreeRenderer $renderer = null, ?NewParser $parser = null, ?LoggerInterface $logger = null
@@ -49,56 +49,49 @@ class WebComponentController
   {
     $this->dom = Dom::domFromString($content);
 
-
     $this->xpath = new \DOMXpath($this->dom);
 
 
     $HTMLComponents = $this->findParentsHTMLComponent();
-
-    foreach ($HTMLComponents as $htmlComponent){
-      $renderer_component = $htmlComponent->render($this->render, $this->dom, $this->factory);
-
-      $newDOM = Dom::domFromString($renderer_component["render_content"]);
-      $dom_element_renderer = $newDOM->childNodes[1];
-
-      $renderer_component["HTMLComponent"]->addClassAtributesNotYetAdded($dom_element_renderer);
-
-      $parent_node = $renderer_component["HTMLComponent"]->DOMElement->parentNode;
-      $parent_node->replaceChild($this->dom->importNode($dom_element_renderer, true),$htmlComponent->DOMElement);
+    while ($HTMLComponents){
+      foreach ($HTMLComponents as $htmlComponent){
+        $renderer_component = $htmlComponent->render($this->render, $this->dom, $this->factory);
+        $this->render->replaceChildNodeToWebComponetRender($renderer_component, $this->dom);
+      }
+        $HTMLComponents = $this->findParentsHTMLComponent();
     }
 
 
     return $this->dom->saveHTML();
   }
 
-
   private function findParentsHTMLComponent()
   {
+    $this->HTMLComponents = [];
     $webcomponents = iterator_to_array($this->xpath->query("//*[starts-with(local-name(), 'wc-')]"));
 
     foreach ($webcomponents as $key => $component) {
       if ($key == 0){
         $this->HTMLComponents[] =  $this->factory->create($component);
       }else{
-        $this->parentComponent = null;
-        $this->setHTMLComponentChild(end($this->HTMLComponents)->DOMElement, $component);
-
-        if(!$this->parentComponent){
+        $this->findWebComponentParent($component);
+        if(!$this->isChildWebComponent){
           $this->HTMLComponents[] =  $this->factory->create($component);
+        } else {
+          $this->isChildWebComponent = false;
         }
       }
     }
     return $this->HTMLComponents;
   }
 
-  private function setHTMLComponentChild($WebComponentElement , $component)
+  private function findWebComponentParent($element)
   {
-    if ($component->parentNode === $WebComponentElement){
-      $this->parentComponent = $WebComponentElement;
-    }
-    if ($WebComponentElement->childNodes){
-      foreach ($WebComponentElement->childNodes as $child) {
-        $this->setHTMLComponentChild($child, $component);
+    if($element->parentNode){
+      if(Dom::isWebComponent($element->parentNode)){
+        $this->isChildWebComponent = true;
+      }else {
+        $this->findWebComponentParent($element->parentNode);
       }
     }
   }

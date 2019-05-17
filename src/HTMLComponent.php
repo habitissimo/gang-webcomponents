@@ -110,10 +110,13 @@ abstract class HTMLComponent
     public function render($renderer, $dom = null, $factory =  null)
     {
       foreach ($this->DOMElement->childNodes as $child) {
-        if ($this->isWebComponent($child)) {
+        if (Dom::isWebComponent($child)) {
           $element =  $factory->create($child);
           $this->innerHtml .= $element->render($renderer, $dom, $factory)["render_content"];
         }else {
+          if($child->childNodes){
+            $this->findHTMLComponentInDomNode($renderer, $dom, $factory, $child);
+          }
           $this->innerHtml .= $dom->saveHTML($child);
         }
       }
@@ -121,18 +124,28 @@ abstract class HTMLComponent
       return ["render_content" => $renderer->render($this), "HTMLComponent" => $this];
     }
 
-    public function addClassAtributesNotYetAdded($element)
+    private function findHTMLComponentInDomNode($renderer, $dom, $factory, $element)
     {
-      if($this->class_name){
-        $componentClassAttributes =  explode(" ",$element->getAttribute("class"));
-        $classNameAtributes = explode(" ",$this->class_name);
-        $classAtributesNoAddedYet = array_diff($classNameAtributes, $componentClassAttributes);
-        $element->setAttribute('class', $element->getAttribute("class") ." ". implode(" ", $classAtributesNoAddedYet));
+      foreach ($element->childNodes as $child){
+        if (Dom::isWebComponent($child)){
+          $HTMLComponent =  $factory->create($child);
+          $renderer_component = $HTMLComponent->render($renderer, $dom, $factory);
+          $renderer->replaceChildNodeToWebComponetRender($renderer_component, $dom);
+        }else{
+          if ($child->childNodes) {
+            $this->findHTMLComponentInDomNode($renderer, $dom, $factory, $child);
+          }
+        }
       }
     }
 
-    private function isWebComponent (\DomNode $element) {
-      return substr($element->nodeName,0,3)=== "wc-";
-    }
+  protected function remove_text_blanks($elements)
+  {
+    return array_values (array_filter(iterator_to_array($elements), array($this, 'remove_text_blanks_call_back')));
+  }
+
+  private function remove_text_blanks_call_back($element){
+    return !($element instanceof \DOMText && trim($element->data) === "");
+  }
 
 }

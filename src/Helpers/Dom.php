@@ -38,4 +38,9 @@ class Dom
       return $dom;
     }
 
+    public static function isWebComponent (\DomNode $element) : bool
+    {
+      return substr($element->nodeName,0,3)=== "wc-";
+    }
+
 }

@@ -66,11 +66,25 @@ class Renderer
         return Dom::elementToString($dom, $element);
     }
 
+    public function replaceChildNodeToWebComponetRender($webcomponent_rendered, $dom)
+    {
+      $newDOM = Dom::domFromString($webcomponent_rendered["render_content"]);
+      $dom_element_renderer = $newDOM->childNodes[1];
+
+      $this->addClassAtributesNotYetAdded($webcomponent_rendered["HTMLComponent"]->class_name,$dom_element_renderer);
+
+      $parent_node = $webcomponent_rendered["HTMLComponent"]->DOMElement->parentNode;
+      $parent_node->replaceChild($dom->importNode($dom_element_renderer, true),$webcomponent_rendered["HTMLComponent"]->DOMElement);
+    }
+
+
     private function addClassAtributesNotYetAdded($className,$element)
     {
-      $componentClassAttributes =  explode(" ",$element->getAttribute("class"));
-      $classNameAtributes = explode(" ",$className);
-      $classAtributesNoAddedYet = array_diff($classNameAtributes, $componentClassAttributes);
-      $element->setAttribute('class', $element->getAttribute("class") ." ". implode(" ", $classAtributesNoAddedYet));
-    }
+      if($className){
+        $componentClassAttributes =  explode(" ",$element->getAttribute("class"));
+        $classNameAtributes = explode(" ",$className);
+        $classAtributesNoAddedYet = array_diff($classNameAtributes, $componentClassAttributes);
+        $element->setAttribute('class', $element->getAttribute("class") ." ". implode(" ", $classAtributesNoAddedYet));
+      }
+  }
 }
