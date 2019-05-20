@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Gang\WebComponentsTests;
 
 use Gang\WebComponents\ComponentLibrary;
+use Gang\WebComponents\Configuration;
 use PHPUnit\Framework\TestCase;
 
 class ComponentLibraryTest extends TestCase
@@ -17,11 +18,15 @@ class ComponentLibraryTest extends TestCase
   private function generateBasicExpectedData(string $namespace, array $components)
   {
     $expected_library = [];
+
     foreach ($components as $component => $directory) {
-      $expected_library[$component] = [
+      $componentName = "wc-".strtolower(preg_replace("%([a-z])([A-Z])%",'\1-\2',$component));
+
+      $expected_library[$componentName] = [
         ComponentLibrary::KEY_NAMESPACE     => $namespace.'\\'.$component,
         ComponentLibrary::KEY_FILE          =>  $directory . DIRECTORY_SEPARATOR . $component . DIRECTORY_SEPARATOR . $component . '.php',
         ComponentLibrary::COMPONENT_FOLDER  => $directory,
+        ComponentLibrary::COMPONENT_NAME => $component
       ];
     }
     return $expected_library;
@@ -29,7 +34,7 @@ class ComponentLibraryTest extends TestCase
 
   public function setUp(): void
   {
-    $this->componentLibrary = new ComponentLibrary(null);
+    $this->componentLibrary = new ComponentLibrary();
   }
 
   private function createStructureDir($namespace ,$components){
@@ -130,7 +135,7 @@ class '.$component.' extends HTMLComponent '.  $withTwig ?? 'implements Template
     $this->createStructureDir($namespace, self::COMPONENTS);
 
     $this->componentLibrary->loadLibrary($namespace, $directory);
-    $this->assertEquals('Habitissimo\Utils\Button\Button', $this->componentLibrary->getComponentClass("Button"));
+    $this->assertEquals('Habitissimo\Utils\Button\Button', $this->componentLibrary->getComponentClass("wc-button"));
     $this->cleanDirectories(self::COMPONENTS, [$directory]);
   }
 
@@ -150,7 +155,7 @@ class '.$component.' extends HTMLComponent '.  $withTwig ?? 'implements Template
 
     $this->componentLibrary->loadLibrary($namespace, $directory);
     $expected_content = "Twig template";
-    $this->assertEquals($expected_content, $this->componentLibrary->getTemplateContent("Button", ".twig"));
+    $this->assertEquals($expected_content, $this->componentLibrary->getTemplateContent("wc-button", ".twig"));
 
     $this->cleanDirectories(self::COMPONENTS, [$directory]);
   }
@@ -176,20 +181,23 @@ class '.$component.' extends HTMLComponent '.  $withTwig ?? 'implements Template
     $this->componentLibrary->loadLibrary("Templates\Utils\Component", "TestingLib/Components");
 
     $expected_lib = [
-      "Input" =>  [
+      "wc-input" =>  [
         ComponentLibrary::KEY_FILE => "packages/Tests/TestContent/Input/Input.php",
         ComponentLibrary::KEY_NAMESPACE => "Habitissimo\Utils\Input",
-        ComponentLibrary::COMPONENT_FOLDER => 'packages/Tests/TestContent'
+        ComponentLibrary::COMPONENT_FOLDER => 'packages/Tests/TestContent',
+        ComponentLibrary::COMPONENT_NAME => 'Input'
       ],
-      "Button" =>  [
+      "wc-button" =>  [
         ComponentLibrary::KEY_FILE => "packages/Tests/TestContent/Button/Button.php",
         ComponentLibrary::KEY_NAMESPACE => "Habitissimo\Utils\Button",
-        ComponentLibrary::COMPONENT_FOLDER => 'packages/Tests/TestContent'
+        ComponentLibrary::COMPONENT_FOLDER => 'packages/Tests/TestContent',
+        ComponentLibrary::COMPONENT_NAME => "Button"
       ],
-      "Nav" =>  [
+      "wc-nav" =>  [
         ComponentLibrary::KEY_FILE => "TestingLib/Components/Nav/Nav.php",
         ComponentLibrary::KEY_NAMESPACE => "Templates\Utils\Component\Nav",
-        ComponentLibrary::COMPONENT_FOLDER => 'TestingLib/Components'
+        ComponentLibrary::COMPONENT_FOLDER => 'TestingLib/Components',
+        ComponentLibrary::COMPONENT_NAME => "Nav"
       ]
     ];
     $this->assertEquals($expected_lib, $this->componentLibrary->getLibrary());

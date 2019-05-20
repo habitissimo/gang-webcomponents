@@ -29,10 +29,12 @@ class ComponentLibrary
     {
       $this->cacheDriver = Configuration::$library_cache_driver;
       $this->lifeTime = Configuration::$library_cache_life_time;
-      $this->loadLibrary(Configuration::$library_base_namespace, Configuration::$library_template_dir);
+      if(Configuration::$library_base_namespace && Configuration::$library_template_dir){
+        $this->loadLibrary(Configuration::$library_base_namespace, Configuration::$library_template_dir);
+      }
     }
 
-    private function loadLibrary(string $base_namespace, string $template_dir) : void
+    public function loadLibrary(string $base_namespace, string $template_dir) : void
     {
       $safe_base_namespace =  $this->getSafePath($base_namespace);
       $safe_template_dir =  $this->getSafePath($template_dir);

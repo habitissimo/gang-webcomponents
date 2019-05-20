@@ -3,7 +3,9 @@
 namespace Gang\WebComponentsTests;
 
 use Gang\WebComponents\ComponentLibrary;
+use Gang\WebComponents\Configuration;
 use Gang\WebComponents\Contracts\TemplateFolderInterface;
+use Gang\WebComponents\Helpers\Dom;
 use Gang\WebComponents\Renderer\TwigTemplateRenderer;
 use Gang\WebComponents\TemplateFinder;
 use Gang\WebComponentsTests\WebComponents\Button\Button;
@@ -24,16 +26,19 @@ class TemplateFinderTest extends TestCase
 
     public function setUp(): void
     {
-        $lib = new ComponentLibrary(null);
-        $lib->loadLibrary("Gang\WebComponentsTests\WebComponents", __DIR__ . DIRECTORY_SEPARATOR .  "WebComponents");
-
-        $this->templateFinder = new TemplateFinder(new TwigTemplateRenderer(), $lib);
+      Configuration::$library_base_namespace = "Gang\WebComponentsTests\WebComponents";
+      Configuration::$library_template_dir = __DIR__ . DIRECTORY_SEPARATOR .  "WebComponents";
+      $lib = new ComponentLibrary(null);
+      $this->templateFinder = new TemplateFinder(new TwigTemplateRenderer(), $lib);
     }
 
     // Test with template
     public function testGetTemplate() : void
     {
         $button = new Button();
+        $dom = Dom::domFromString("<wc-button></wc-button>");
+        $button->setDOMElement($dom->childNodes[1]);
+
         $this->assertEquals(
             $this->buttonTemplate,
             $this->templateFinder->find($button)
@@ -43,9 +48,13 @@ class TemplateFinderTest extends TestCase
     // test without template but with getTemplate()
     public function testGetTemplateFromGetTemplate() : void
     {
+        $button = new TwitterShareSocialButton();
+        $dom = Dom::domFromString("<wc-twitter-share-social-button></wc-twitter-share-social-button>");
+        $button->setDOMElement($dom->childNodes[1]);
+
         $this->assertEquals(
             $this->buttonTemplate,
-            $this->templateFinder->find(new TwitterShareSocialButton())
+            $this->templateFinder->find($button)
         );
     }
 
@@ -58,9 +67,13 @@ class TemplateFinderTest extends TestCase
     // test no renderable
     public function testGetTemplateNotRenderable() : void
     {
-        $this->assertEquals(
+      $button = new GoogleShareSocialButton();
+      $dom = Dom::domFromString("<wc-google-share-social-button></wc-google-share-social-button>");
+      $button->setDOMElement($dom->childNodes[1]);
+
+      $this->assertEquals(
             ComponentLibrary::CONTENT_NOT_RENDERABLE,
-            $this->templateFinder->find(new GoogleShareSocialButton())
+            $this->templateFinder->find($button)
         );
     }
 }
