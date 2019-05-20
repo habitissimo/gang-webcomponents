@@ -39,42 +39,15 @@ class Renderer
         return $rendered;
     }
 
-    private function postRender(string $rendered, HTMLComponent $component)
+    public function replaceChildNodeToWebComponetRendered($webcomponent_rendered, $HTMLComponent, $dom)
     {
-        $dom = Dom::create();
-        $element = Dom::elementFromString($dom, $rendered);
-        $className = $component->class_name;
-
-        if($className){
-          $this->addClassAtributesNotYetAdded($className, $element);
-        }
-
-        /*
-        if ($component->id && empty($element->getAttribute("id"))) {
-            $element->setAttribute('id', $component->id);
-        }
-        */
-
-        if (null !== $component->dataAttributes) {
-          foreach ($component->dataAttributes->toArray() as $name => $value) {
-            if (empty($element->getAttribute($name))) {
-                $element->setAttribute($name, $value);
-            }
-          }
-        }
-
-        return Dom::elementToString($dom, $element);
-    }
-
-    public function replaceChildNodeToWebComponetRender($webcomponent_rendered, $dom)
-    {
-      $newDOM = Dom::domFromString($webcomponent_rendered["render_content"]);
+      $newDOM = Dom::domFromString($webcomponent_rendered);
       $dom_element_renderer = $newDOM->childNodes[1];
 
-      $this->addClassAtributesNotYetAdded($webcomponent_rendered["HTMLComponent"]->class_name,$dom_element_renderer);
+      $this->addClassAtributesNotYetAdded($HTMLComponent->class_name,$dom_element_renderer);
 
-      $parent_node = $webcomponent_rendered["HTMLComponent"]->DOMElement->parentNode;
-      $parent_node->replaceChild($dom->importNode($dom_element_renderer, true),$webcomponent_rendered["HTMLComponent"]->DOMElement);
+      $parent_node = $HTMLComponent->DOMElement->parentNode;
+      $parent_node->replaceChild($dom->importNode($dom_element_renderer, true),$HTMLComponent->DOMElement);
     }
 
 

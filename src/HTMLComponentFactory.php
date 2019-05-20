@@ -14,7 +14,7 @@ class HTMLComponentFactory
         $this->library = $library;
     }
 
-    public function create(\DOMElement $element) : HTMLComponent
+    public function create(\DOMNode $element) : HTMLComponent
     {
         $class = $this->library->getComponentClass($element->nodeName);
 

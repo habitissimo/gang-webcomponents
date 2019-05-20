@@ -112,31 +112,13 @@ abstract class HTMLComponent
       foreach ($this->DOMElement->childNodes as $child) {
         if (Dom::isWebComponent($child)) {
           $element =  $factory->create($child);
-          $this->innerHtml .= $element->render($renderer, $dom, $factory)["render_content"];
+          $this->innerHtml .= $element->render($renderer, $dom, $factory);
         }else {
-          if($child->childNodes){
-            $this->findHTMLComponentInDomNode($renderer, $dom, $factory, $child);
-          }
           $this->innerHtml .= $dom->saveHTML($child);
         }
       }
 
-      return ["render_content" => $renderer->render($this), "HTMLComponent" => $this];
-    }
-
-    private function findHTMLComponentInDomNode($renderer, $dom, $factory, $element)
-    {
-      foreach ($element->childNodes as $child){
-        if (Dom::isWebComponent($child)){
-          $HTMLComponent =  $factory->create($child);
-          $renderer_component = $HTMLComponent->render($renderer, $dom, $factory);
-          $renderer->replaceChildNodeToWebComponetRender($renderer_component, $dom);
-        }else{
-          if ($child->childNodes) {
-            $this->findHTMLComponentInDomNode($renderer, $dom, $factory, $child);
-          }
-        }
-      }
+      return $renderer->render($this);
     }
 
   protected function remove_text_blanks($elements)

@@ -5,9 +5,7 @@ namespace Gang\WebComponents;
 
 use Gang\WebComponents\Helpers\Dom;
 use Gang\WebComponents\Logger\WebComponentLogger;
-use Gang\WebComponents\Parser\NewParser;
 use Gang\WebComponents\Renderer\Renderer;
-use Gang\WebComponents\Renderer\TreeRenderer;
 use Gang\WebComponents\Renderer\TwigTemplateRenderer;
 use Psr\Log\LoggerInterface;
 
@@ -15,24 +13,19 @@ class WebComponentController
 {
 
   static  $instance;
-  private $parser;
-  private $renderer;
   private $factory;
-  private $render;
+  private $renderer;
 
   private $dom;
   private $xpath;
-  private $HTMLComponents = [];
-  private $isChildWebComponent =  false;
+
 
   public function __construct(
-    ?ComponentLibrary $library = null, ?TreeRenderer $renderer = null, ?NewParser $parser = null, ?LoggerInterface $logger = null
+    ?ComponentLibrary $library = null, ?LoggerInterface $logger = null
   ) {
     $library = $library ?? new ComponentLibrary();
-    $this->parser = $parser ?? new NewParser();
-    $this->renderer = $renderer ?? new TreeRenderer($library);
     $this->factory = new HTMLComponentFactory($library);
-    $this->render = new Renderer(new TwigTemplateRenderer(), $library);
+    $this->renderer = new Renderer(new TwigTemplateRenderer(), $library);
     if (null !== $logger) {
       WebComponentLogger::setLogger($logger);
     }
@@ -48,51 +41,56 @@ class WebComponentController
   public function process(string $content) : string
   {
     $this->dom = Dom::domFromString($content);
-
     $this->xpath = new \DOMXpath($this->dom);
+    $HTMLComponents = $this->getParentWebComponents();
 
-
-    $HTMLComponents = $this->findParentsHTMLComponent();
     while ($HTMLComponents){
       foreach ($HTMLComponents as $htmlComponent){
-        $renderer_component = $htmlComponent->render($this->render, $this->dom, $this->factory);
-        $this->render->replaceChildNodeToWebComponetRender($renderer_component, $this->dom);
+        $renderer_component = $htmlComponent->render($this->renderer, $this->dom, $this->factory);
+        $this->renderer->replaceChildNodeToWebComponetRendered($renderer_component,$htmlComponent, $this->dom);
       }
-        $HTMLComponents = $this->findParentsHTMLComponent();
+        $HTMLComponents = $this->getParentWebComponents();
     }
-
 
     return $this->dom->saveHTML();
   }
 
-  private function findParentsHTMLComponent()
+  /**
+   * Return array of WebComponents that not have WebComponent parents
+   * @param void
+   * @return array
+   */
+  private function getParentWebComponents()
   {
-    $this->HTMLComponents = [];
+    $HTMLComponents = [];
     $webcomponents = iterator_to_array($this->xpath->query("//*[starts-with(local-name(), 'wc-')]"));
 
     foreach ($webcomponents as $key => $component) {
       if ($key == 0){
-        $this->HTMLComponents[] =  $this->factory->create($component);
+        $HTMLComponents[] =  $this->factory->create($component);
       }else{
-        $this->findWebComponentParent($component);
-        if(!$this->isChildWebComponent){
-          $this->HTMLComponents[] =  $this->factory->create($component);
-        } else {
-          $this->isChildWebComponent = false;
+        if(!$this->hasParentWebComponent($component)){
+          $HTMLComponents[] =  $this->factory->create($component);
         }
       }
     }
-    return $this->HTMLComponents;
+    return $HTMLComponents;
   }
 
-  private function findWebComponentParent($element)
+  /**
+   * If element has an WebComponent parent will return true
+   * @param mixed
+   * @return bool
+   */
+  private function hasParentWebComponent(\DomNode $element)
   {
     if($element->parentNode){
       if(Dom::isWebComponent($element->parentNode)){
-        $this->isChildWebComponent = true;
+        return true;
       }else {
-        $this->findWebComponentParent($element->parentNode);
+        $this->hasParentWebComponent($element->parentNode);
       }
     }
+    return false;
   }
 }
