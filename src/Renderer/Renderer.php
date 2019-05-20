@@ -2,12 +2,11 @@
 declare(strict_types=1);
 namespace Gang\WebComponents\Renderer;
 
-use Gang\WebComponents\Contracts\TemplateRendererInterface;
-use Gang\WebComponents\HTMLComponent;
 use Gang\WebComponents\ComponentLibrary;
-use Gang\WebComponents\TemplateFinder;
+use Gang\WebComponents\Contracts\TemplateRendererInterface;
 use Gang\WebComponents\Helpers\Dom;
-use Gang\WebComponents\WebComponentController;
+use Gang\WebComponents\HTMLComponent;
+use Gang\WebComponents\TemplateFinder;
 
 class Renderer
 {
@@ -24,7 +23,6 @@ class Renderer
 
     public function render(HTMLComponent $htmlComponent) : string
     {
-
         $fileContent = $this->templateFinder->find($htmlComponent);
         $context = get_object_vars($htmlComponent);
         $context['children'] = $context['innerHtml'];

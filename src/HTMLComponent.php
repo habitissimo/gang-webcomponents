@@ -12,9 +12,9 @@ abstract class HTMLComponent
     protected $template;
     protected $required_fields = [];
     protected $attributes = [];
+
     public $childNodes = [];
     public $DOMElement;
-
     public $dataAttributes;
     public $innerHtml;
     public $class_name;

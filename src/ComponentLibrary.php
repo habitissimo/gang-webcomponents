@@ -3,7 +3,6 @@ declare(strict_types=1);
 namespace Gang\WebComponents;
 
 
-use Doctrine\Common\Cache\CacheProvider;
 use Gang\WebComponents\Exceptions\ComponentClassNotFound;
 use Gang\WebComponents\Exceptions\TemplateFileNotFound;
 use Gang\WebComponents\Helpers\File;

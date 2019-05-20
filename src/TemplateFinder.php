@@ -5,12 +5,10 @@ namespace Gang\WebComponents;
 use Gang\WebComponents\Contracts\TemplateFolderInterface;
 use Gang\WebComponents\Contracts\TemplateRendererInterface;
 use Gang\WebComponents\Exceptions\TemplateFileNotFound;
-use Gang\WebComponents\Helpers\File;
 use Gang\WebComponents\Logger\WebComponentLogger as Log;
 
 class TemplateFinder
 {
-
     private $lib;
     private $templateRender;
 

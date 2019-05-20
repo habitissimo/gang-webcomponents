@@ -2,7 +2,6 @@
 
 namespace Gang\WebComponents;
 
-use Gang\WebComponents\Logger\WebComponentLogger as Log;
 use Gang\WebComponents\Parser\Nodes\WebComponent;
 
 class HTMLComponentFactory
