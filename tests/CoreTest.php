@@ -26,14 +26,14 @@ use Prophecy\Argument;
 
 final class CoreTests extends TestCase
 {
-    private $prophet;
-    private $parser;
-    private $renderer;
-    private $loader;
-    private $controller;
-    private $factory;
+  private $prophet;
+  private $parser;
+  private $renderer;
+  private $loader;
+  private $controller;
+  private $factory;
 
-    private $integrationHtmlResult = '<!DOCTYPE html>
+  private $integrationHtmlResult = '<!DOCTYPE html>
 <html lang="es-ES">
 <head>
 
@@ -50,84 +50,84 @@ final class CoreTests extends TestCase
 </html>
 ';
 
-    public function setup()
-    {
-        $this->prophet = new Prophet;
-        $this->renderer = $this->prophet->prophesize(TreeRenderer::class);
-        $this->loader = $this->prophet->prophesize(ComponentLibrary::class);
-        $this->factory = $this->prophet->prophesize(HTMLComponentFactory::class);
+  public function setup()
+  {
+    $this->prophet = new Prophet;
+    $this->renderer = $this->prophet->prophesize(TreeRenderer::class);
+    $this->loader = $this->prophet->prophesize(ComponentLibrary::class);
+    $this->factory = $this->prophet->prophesize(HTMLComponentFactory::class);
 
 
-        Configuration::$library_base_namespace = "Gang\WebComponentsTests\WebComponents";
-        Configuration::$library_template_dir = __DIR__ . DIRECTORY_SEPARATOR .  "WebComponents";
-        $lib = new ComponentLibrary();
+    Configuration::$library_base_namespace = "Gang\WebComponentsTests\WebComponents";
+    Configuration::$library_template_dir = __DIR__ . DIRECTORY_SEPARATOR . "WebComponents";
+    $lib = new ComponentLibrary();
 
 
-        $this->controller = new WebComponentController(
-          $lib
-        );
-    }
+    $this->controller = new WebComponentController(
+      $lib
+    );
+  }
 
-    public function testPlainHTMLOnly() : void
-    {
-        $a = '<a href="foo">Goto my site</a>';
-        $an_htrml_string = "<!DOCTYPE html>". "\n" . $a . "\n";
-        $result = $this->controller->process($an_htrml_string);
+  public function testPlainHTMLOnly(): void
+  {
+    $a = '<a href="foo">Goto my site</a>';
+    $an_htrml_string = "<!DOCTYPE html>" . "\n" . $a . "\n";
+    $result = $this->controller->process($an_htrml_string);
 
-        $this->assertEquals($an_htrml_string, $result);
-    }
+    $this->assertEquals($an_htrml_string, $result);
+  }
 
-    public function testWebComponentOnly()
-    {
-      $a = '<a role="button" href="foo">Goto my site</a>';
-        $an_htrml_string = "<!DOCTYPE html><wc-button href='foo'>Goto my site</wc-button>";
-        $expected_render = '<!DOCTYPE html>' . "\n" . $a . "\n";
+  public function testWebComponentOnly()
+  {
+    $a = '<a role="button" href="foo">Goto my site</a>';
+    $an_htrml_string = "<!DOCTYPE html><wc-button href='foo'>Goto my site</wc-button>";
+    $expected_render = '<!DOCTYPE html>' . "\n" . $a . "\n";
 
-        $result = $this->controller->process($an_htrml_string);
-        $this->assertEquals($expected_render, $result);
-    }
+    $result = $this->controller->process($an_htrml_string);
+    $this->assertEquals($expected_render, $result);
+  }
 
-    public function testHTMLAndWebComponent() : void
-    {
-        $non_wc = '<img src="foo">';
-        $wc = '<wc-button href="foo">Go to my site</wc-button>';
-        $rendered_wc = '<a role="button" href="foo">Go to my site</a>';
-        $input = "<!DOCTYPE html>" . $non_wc . $wc;
-        $expected_render ="<!DOCTYPE html>". "\n". $non_wc . $rendered_wc . "\n";
+  public function testHTMLAndWebComponent(): void
+  {
+    $non_wc = '<img src="foo">';
+    $wc = '<wc-button href="foo">Go to my site</wc-button>';
+    $rendered_wc = '<a role="button" href="foo">Go to my site</a>';
+    $input = "<!DOCTYPE html>" . $non_wc . $wc;
+    $expected_render = "<!DOCTYPE html>" . "\n" . $non_wc . $rendered_wc . "\n";
 
-        $result = $this->controller->process($input);
+    $result = $this->controller->process($input);
 
-        $this->assertEquals($expected_render, $result);
-    }
+    $this->assertEquals($expected_render, $result);
+  }
 
-    /**
-     * @test
-     */
-    public function should_integrate_web_components() : void
-    {
-        Configuration::$library_template_dir = __DIR__ . DIRECTORY_SEPARATOR .  "WebComponents";
-        Configuration::$library_base_namespace = "Gang\WebComponentsTests\WebComponents";
-        $lib = new ComponentLibrary();
-        $controller = new WebComponentController($lib);
-        $parsed_template = $controller->process(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR .  "WebComponents" . DIRECTORY_SEPARATOR ."IntegrationTest.twig"));
-        $this->assertEquals($this->integrationHtmlResult,$parsed_template);
-    }
+  /**
+   * @test
+   */
+  public function should_integrate_web_components(): void
+  {
+    Configuration::$library_template_dir = __DIR__ . DIRECTORY_SEPARATOR . "WebComponents";
+    Configuration::$library_base_namespace = "Gang\WebComponentsTests\WebComponents";
+    $lib = new ComponentLibrary();
+    $controller = new WebComponentController($lib);
+    $parsed_template = $controller->process(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . "WebComponents" . DIRECTORY_SEPARATOR . "IntegrationTest.twig"));
+    $this->assertEquals($this->integrationHtmlResult, $parsed_template);
+  }
 
 
-    public function testAddAtribute()
-    {
-      $a =  '<a role="button" class=" btn-outlined"></a>';
-      $expect_data = '<!DOCTYPE html>' . "\n" . $a . "\n";
-      $button = '<!DOCTYPE html><wc-button className="btn-outlined"></wc-button>';
-      $result = $this->controller->process($button);
-      $this->assertEquals($expect_data, $result);
-    }
+  public function testAddAtribute()
+  {
+    $a = '<a role="button" class=" btn-outlined"></a>';
+    $expect_data = '<!DOCTYPE html>' . "\n" . $a . "\n";
+    $button = '<!DOCTYPE html><wc-button className="btn-outlined"></wc-button>';
+    $result = $this->controller->process($button);
+    $this->assertEquals($expect_data, $result);
+  }
 
-    public function testLink() : void
-    {
-      $link = "<link rel=\"preload\" href=\"/static/build/css/yantramanav.min.css?v=1556611503\" as=\"style\" onload=\"this.onload=null;this.rel='stylesheet'\">";
-      $expect_data =     $expect_data = '<!DOCTYPE html>' . "\n" . $link . "\n";
-      $result = $this->controller->process("<!DOCTYPE html>".$link);
-      $this->assertEquals($expect_data, $result);
-    }
+  public function testLink(): void
+  {
+    $link = "<link rel=\"preload\" href=\"/static/build/css/yantramanav.min.css?v=1556611503\" as=\"style\" onload=\"this.onload=null;this.rel='stylesheet'\">";
+    $expect_data = $expect_data = '<!DOCTYPE html>' . "\n" . $link . "\n";
+    $result = $this->controller->process("<!DOCTYPE html>" . $link);
+    $this->assertEquals($expect_data, $result);
+  }
 }

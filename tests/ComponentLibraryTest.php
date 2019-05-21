@@ -10,22 +10,22 @@ use PHPUnit\Framework\TestCase;
 class ComponentLibraryTest extends TestCase
 {
   private $componentLibrary;
-  private const PACKAGE_DIR = "packages" .DIRECTORY_SEPARATOR . "Tests";
-  private const TEST_DIR = "TestContent" ;
+  private const PACKAGE_DIR = "packages" . DIRECTORY_SEPARATOR . "Tests";
+  private const TEST_DIR = "TestContent";
   private const COMPONENTS = ["Button" => self::PACKAGE_DIR . DIRECTORY_SEPARATOR . self::TEST_DIR
-                              ,"Input" => self::PACKAGE_DIR . DIRECTORY_SEPARATOR . self::TEST_DIR];
+    , "Input" => self::PACKAGE_DIR . DIRECTORY_SEPARATOR . self::TEST_DIR];
 
   private function generateBasicExpectedData(string $namespace, array $components)
   {
     $expected_library = [];
 
     foreach ($components as $component => $directory) {
-      $componentName = "wc-".strtolower(preg_replace("%([a-z])([A-Z])%",'\1-\2',$component));
+      $componentName = "wc-" . strtolower(preg_replace("%([a-z])([A-Z])%", '\1-\2', $component));
 
       $expected_library[$componentName] = [
-        ComponentLibrary::KEY_NAMESPACE     => $namespace.'\\'.$component,
-        ComponentLibrary::KEY_FILE          =>  $directory . DIRECTORY_SEPARATOR . $component . DIRECTORY_SEPARATOR . $component . '.php',
-        ComponentLibrary::COMPONENT_FOLDER  => $directory,
+        ComponentLibrary::KEY_NAMESPACE => $namespace . '\\' . $component,
+        ComponentLibrary::KEY_FILE => $directory . DIRECTORY_SEPARATOR . $component . DIRECTORY_SEPARATOR . $component . '.php',
+        ComponentLibrary::COMPONENT_FOLDER => $directory,
         ComponentLibrary::COMPONENT_NAME => $component
       ];
     }
@@ -37,9 +37,10 @@ class ComponentLibraryTest extends TestCase
     $this->componentLibrary = new ComponentLibrary();
   }
 
-  private function createStructureDir($namespace ,$components){
+  private function createStructureDir($namespace, $components)
+  {
 
-    foreach ($components as $component => $directory){
+    foreach ($components as $component => $directory) {
       $this->createFiles($namespace, $component, $directory);
     }
 
@@ -52,17 +53,17 @@ class ComponentLibraryTest extends TestCase
     }
   }
 
-  private function createFiles($namespace, $component , $directory)
+  private function createFiles($namespace, $component, $directory)
   {
     $this->createDir($directory . DIRECTORY_SEPARATOR . $component);
-    $this->createComponentClass($component, $namespace. "\\" . $component, $directory . DIRECTORY_SEPARATOR . $component );
+    $this->createComponentClass($component, $namespace . "\\" . $component, $directory . DIRECTORY_SEPARATOR . $component);
   }
 
-  private function createComponentClass(string $component, string $namespace, string $directory, ?bool $withTwig = true) : void
+  private function createComponentClass(string $component, string $namespace, string $directory, ?bool $withTwig = true): void
   {
     if ($withTwig === true) {
       file_put_contents(
-        $directory . DIRECTORY_SEPARATOR .  $component . '.twig',
+        $directory . DIRECTORY_SEPARATOR . $component . '.twig',
         'Twig template'
       );
     }
@@ -70,9 +71,9 @@ class ComponentLibraryTest extends TestCase
     file_put_contents(
       $directory . DIRECTORY_SEPARATOR . $component . '.php',
       '<?php
-namespace '.$namespace.';
+namespace ' . $namespace . ';
 
-class '.$component.' extends HTMLComponent '.  $withTwig ?? 'implements TemplateFolderInterface' .'
+class ' . $component . ' extends HTMLComponent ' . $withTwig ?? 'implements TemplateFolderInterface' . '
 {
     protected $id;
     public function setId($value)
@@ -87,9 +88,9 @@ class '.$component.' extends HTMLComponent '.  $withTwig ?? 'implements Template
   public function cleanDirectories($components, $directories): void
   {
     foreach ($components as $comp => $dir) {
-      if (file_exists($dir . DIRECTORY_SEPARATOR . $comp . DIRECTORY_SEPARATOR . $comp. '.php')) {
-        unlink($dir . DIRECTORY_SEPARATOR . $comp . DIRECTORY_SEPARATOR . $comp. '.php');
-        unlink($dir . DIRECTORY_SEPARATOR . $comp . DIRECTORY_SEPARATOR . $comp. '.twig');
+      if (file_exists($dir . DIRECTORY_SEPARATOR . $comp . DIRECTORY_SEPARATOR . $comp . '.php')) {
+        unlink($dir . DIRECTORY_SEPARATOR . $comp . DIRECTORY_SEPARATOR . $comp . '.php');
+        unlink($dir . DIRECTORY_SEPARATOR . $comp . DIRECTORY_SEPARATOR . $comp . '.twig');
         rmdir($dir . DIRECTORY_SEPARATOR . $comp);
       }
     }
@@ -110,7 +111,7 @@ class '.$component.' extends HTMLComponent '.  $withTwig ?? 'implements Template
 
     $this->componentLibrary->loadLibrary($namespace, $directory);
     $this->assertEquals(
-      $this->generateBasicExpectedData($namespace , self::COMPONENTS),
+      $this->generateBasicExpectedData($namespace, self::COMPONENTS),
       $this->componentLibrary->getLibrary()
     );
     $this->cleanDirectories(self::COMPONENTS, [$directory]);
@@ -123,7 +124,7 @@ class '.$component.' extends HTMLComponent '.  $withTwig ?? 'implements Template
 
     $this->createStructureDir($namespace, self::COMPONENTS);
     $this->componentLibrary->loadLibrary($namespace, $directory);
-    $this->assertEquals($this->generateBasicExpectedData($namespace,self::COMPONENTS), $this->componentLibrary->getLibrary());
+    $this->assertEquals($this->generateBasicExpectedData($namespace, self::COMPONENTS), $this->componentLibrary->getLibrary());
     $this->cleanDirectories(self::COMPONENTS, [$directory]);
 
   }
@@ -142,7 +143,7 @@ class '.$component.' extends HTMLComponent '.  $withTwig ?? 'implements Template
   /**
    * @expectedException Gang\WebComponents\Exceptions\ComponentClassNotFound
    */
-  public function testComponentLoadException() : void
+  public function testComponentLoadException(): void
   {
     $this->componentLibrary->getComponentClass("Holakease");
   }
@@ -163,16 +164,16 @@ class '.$component.' extends HTMLComponent '.  $withTwig ?? 'implements Template
   /**
    * @expectedException Gang\WebComponents\Exceptions\ComponentClassNotFound
    */
-  public function testComponentContentException() : void
+  public function testComponentContentException(): void
   {
     $this->componentLibrary->getTemplateContent("Holakease", ".twig");
   }
 
-  public function testManySources() : void
+  public function testManySources(): void
   {
     $components = ["Input" => "packages/Tests/TestContent"
-      ,"Button" => "packages/Tests/TestContent"
-      ];
+      , "Button" => "packages/Tests/TestContent"
+    ];
     $components2 = ["Nav" => "TestingLib/Components"];
     $this->createStructureDir("Habitissimo\Utils", $components);
     $this->createStructureDir("Templates\Utils\Component", $components2);
@@ -181,19 +182,19 @@ class '.$component.' extends HTMLComponent '.  $withTwig ?? 'implements Template
     $this->componentLibrary->loadLibrary("Templates\Utils\Component", "TestingLib/Components");
 
     $expected_lib = [
-      "wc-input" =>  [
+      "wc-input" => [
         ComponentLibrary::KEY_FILE => "packages/Tests/TestContent/Input/Input.php",
         ComponentLibrary::KEY_NAMESPACE => "Habitissimo\Utils\Input",
         ComponentLibrary::COMPONENT_FOLDER => 'packages/Tests/TestContent',
         ComponentLibrary::COMPONENT_NAME => 'Input'
       ],
-      "wc-button" =>  [
+      "wc-button" => [
         ComponentLibrary::KEY_FILE => "packages/Tests/TestContent/Button/Button.php",
         ComponentLibrary::KEY_NAMESPACE => "Habitissimo\Utils\Button",
         ComponentLibrary::COMPONENT_FOLDER => 'packages/Tests/TestContent',
         ComponentLibrary::COMPONENT_NAME => "Button"
       ],
-      "wc-nav" =>  [
+      "wc-nav" => [
         ComponentLibrary::KEY_FILE => "TestingLib/Components/Nav/Nav.php",
         ComponentLibrary::KEY_NAMESPACE => "Templates\Utils\Component\Nav",
         ComponentLibrary::COMPONENT_FOLDER => 'TestingLib/Components',
@@ -206,28 +207,28 @@ class '.$component.' extends HTMLComponent '.  $withTwig ?? 'implements Template
     $this->cleanDirectories($components2, ["TestingLib/Components", "TestingLib"]);
   }
 
-  public function testStrangeFolder() : void
+  public function testStrangeFolder(): void
   {
     $this->markTestSkipped("We don't know the function of this method yet");
     $components = ["Button" => "Testinglib/Components/old"
-    ,"NewButton" => "Testinglib/Components/old"
-    ,"Fragment" => "Testinglib/Components/Fragment"];
+      , "NewButton" => "Testinglib/Components/old"
+      , "Fragment" => "Testinglib/Components/Fragment"];
 
     $this->createStructureDir('Habitissimo\Utils\old', $components);
     $this->componentLibrary->loadLibrary('Habitissimo\Utils', "Testinglib/Components");
     $expected_lib = [
-      "Button"    => [
-        ComponentLibrary::KEY_FILE  => "Testinglib/Components/old/Button.php",
+      "Button" => [
+        ComponentLibrary::KEY_FILE => "Testinglib/Components/old/Button.php",
         ComponentLibrary::KEY_NAMESPACE => "Habitissimo\Utils\old",
         ComponentLibrary::COMPONENT_FOLDER => 'Testinglib/Components'
       ],
-      "NewButton"  => [
+      "NewButton" => [
         ComponentLibrary::KEY_FILE => "Testinglib/Components/old/NewButton.php",
         ComponentLibrary::KEY_NAMESPACE => 'Habitissimo\Utils\old',
         ComponentLibrary::COMPONENT_FOLDER => 'Testinglib/Components'
       ],
-      "Fragment"  => [
-        ComponentLibrary::KEY_FILE  => "Testinglib/Components/Fragment/Fragment.php",
+      "Fragment" => [
+        ComponentLibrary::KEY_FILE => "Testinglib/Components/Fragment/Fragment.php",
         ComponentLibrary::KEY_NAMESPACE => 'Habitissimo\Utils\Fragment',
         ComponentLibrary::COMPONENT_FOLDER => 'Testinglib/Components'
       ]

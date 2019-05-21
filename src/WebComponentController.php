@@ -12,7 +12,7 @@ use Psr\Log\LoggerInterface;
 class WebComponentController
 {
 
-  static  $instance;
+  static $instance;
   private $factory;
   private $renderer;
 
@@ -22,7 +22,8 @@ class WebComponentController
 
   public function __construct(
     ?ComponentLibrary $library = null, ?LoggerInterface $logger = null
-  ) {
+  )
+  {
     $library = $library ?? new ComponentLibrary();
     $this->factory = new HTMLComponentFactory($library);
     $this->renderer = new Renderer(new TwigTemplateRenderer(), $library);
@@ -38,18 +39,18 @@ class WebComponentController
    * @param string $content
    * @return string
    */
-  public function process(string $content) : string
+  public function process(string $content): string
   {
     $this->dom = Dom::domFromString($content);
     $this->xpath = new \DOMXpath($this->dom);
     $HTMLComponents = $this->getParentWebComponents();
 
-    while ($HTMLComponents){
-      foreach ($HTMLComponents as $htmlComponent){
+    while ($HTMLComponents) {
+      foreach ($HTMLComponents as $htmlComponent) {
         $renderer_component = $htmlComponent->render($this->renderer, $this->dom, $this->factory);
-        $this->renderer->replaceChildNodeToWebComponetRendered($renderer_component,$htmlComponent, $this->dom);
+        $this->renderer->replaceChildNodeToWebComponetRendered($renderer_component, $htmlComponent, $this->dom);
       }
-        $HTMLComponents = $this->getParentWebComponents();
+      $HTMLComponents = $this->getParentWebComponents();
     }
 
     return $this->dom->saveHTML();
@@ -66,11 +67,11 @@ class WebComponentController
     $webcomponents = iterator_to_array($this->xpath->query("//*[starts-with(local-name(), 'wc-')]"));
 
     foreach ($webcomponents as $key => $component) {
-      if ($key == 0){
-        $HTMLComponents[] =  $this->factory->create($component);
-      }else{
-        if(!$this->hasParentWebComponent($component)){
-          $HTMLComponents[] =  $this->factory->create($component);
+      if ($key == 0) {
+        $HTMLComponents[] = $this->factory->create($component);
+      } else {
+        if (!$this->hasParentWebComponent($component)) {
+          $HTMLComponents[] = $this->factory->create($component);
         }
       }
     }
@@ -84,10 +85,10 @@ class WebComponentController
    */
   private function hasParentWebComponent(\DomNode $element)
   {
-    if($element->parentNode){
-      if(Dom::isWebComponent($element->parentNode)){
+    if ($element->parentNode) {
+      if (Dom::isWebComponent($element->parentNode)) {
         return true;
-      }else {
+      } else {
         $this->hasParentWebComponent($element->parentNode);
       }
     }

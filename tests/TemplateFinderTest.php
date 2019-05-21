@@ -15,8 +15,8 @@ use PHPUnit\Framework\TestCase;
 
 class TemplateFinderTest extends TestCase
 {
-    private $templateFinder;
-    private $buttonTemplate = '<a {% if id %}id="{{ id }}"{% endif -%} {% if className %}class="btn {{ className }}" {% endif -%} {% if role %}role="{{ role }}" {% endif -%} {% if href -%} href="{{ href }}"{%- endif -%}>
+  private $templateFinder;
+  private $buttonTemplate = '<a {% if id %}id="{{ id }}"{% endif -%} {% if className %}class="btn {{ className }}" {% endif -%} {% if role %}role="{{ role }}" {% endif -%} {% if href -%} href="{{ href }}"{%- endif -%}>
     {{- children | raw }}
     {%- if with_icon == \'true\' -%}
         <Icon type="{{ icon_type }}"></Icon>
@@ -24,56 +24,56 @@ class TemplateFinderTest extends TestCase
 </a>
 ';
 
-    public function setUp(): void
-    {
-      Configuration::$library_base_namespace = "Gang\WebComponentsTests\WebComponents";
-      Configuration::$library_template_dir = __DIR__ . DIRECTORY_SEPARATOR .  "WebComponents";
-      $lib = new ComponentLibrary(null);
-      $this->templateFinder = new TemplateFinder(new TwigTemplateRenderer(), $lib);
-    }
+  public function setUp(): void
+  {
+    Configuration::$library_base_namespace = "Gang\WebComponentsTests\WebComponents";
+    Configuration::$library_template_dir = __DIR__ . DIRECTORY_SEPARATOR . "WebComponents";
+    $lib = new ComponentLibrary(null);
+    $this->templateFinder = new TemplateFinder(new TwigTemplateRenderer(), $lib);
+  }
 
-    // Test with template
-    public function testGetTemplate() : void
-    {
-        $button = new Button();
-        $dom = Dom::domFromString("<wc-button></wc-button>");
-        $button->setDOMElement($dom->childNodes[1]);
+  // Test with template
+  public function testGetTemplate(): void
+  {
+    $button = new Button();
+    $dom = Dom::domFromString("<wc-button></wc-button>");
+    $button->setDOMElement($dom->childNodes[1]);
 
-        $this->assertEquals(
-            $this->buttonTemplate,
-            $this->templateFinder->find($button)
-        );
-    }
+    $this->assertEquals(
+      $this->buttonTemplate,
+      $this->templateFinder->find($button)
+    );
+  }
 
-    // test without template but with getTemplate()
-    public function testGetTemplateFromGetTemplate() : void
-    {
-        $button = new TwitterShareSocialButton();
-        $dom = Dom::domFromString("<wc-twitter-share-social-button></wc-twitter-share-social-button>");
-        $button->setDOMElement($dom->childNodes[1]);
+  // test without template but with getTemplate()
+  public function testGetTemplateFromGetTemplate(): void
+  {
+    $button = new TwitterShareSocialButton();
+    $dom = Dom::domFromString("<wc-twitter-share-social-button></wc-twitter-share-social-button>");
+    $button->setDOMElement($dom->childNodes[1]);
 
-        $this->assertEquals(
-            $this->buttonTemplate,
-            $this->templateFinder->find($button)
-        );
-    }
+    $this->assertEquals(
+      $this->buttonTemplate,
+      $this->templateFinder->find($button)
+    );
+  }
 
-    public function testImplementsTemplateFolderInterface() : void
-    {
-        $button = new TwitterShareSocialButton();
-        $this->assertInstanceOf(TemplateFolderInterface::class, $button);
-    }
+  public function testImplementsTemplateFolderInterface(): void
+  {
+    $button = new TwitterShareSocialButton();
+    $this->assertInstanceOf(TemplateFolderInterface::class, $button);
+  }
 
-    // test no renderable
-    public function testGetTemplateNotRenderable() : void
-    {
-      $button = new GoogleShareSocialButton();
-      $dom = Dom::domFromString("<wc-google-share-social-button></wc-google-share-social-button>");
-      $button->setDOMElement($dom->childNodes[1]);
+  // test no renderable
+  public function testGetTemplateNotRenderable(): void
+  {
+    $button = new GoogleShareSocialButton();
+    $dom = Dom::domFromString("<wc-google-share-social-button></wc-google-share-social-button>");
+    $button->setDOMElement($dom->childNodes[1]);
 
-      $this->assertEquals(
-            ComponentLibrary::CONTENT_NOT_RENDERABLE,
-            $this->templateFinder->find($button)
-        );
-    }
+    $this->assertEquals(
+      ComponentLibrary::CONTENT_NOT_RENDERABLE,
+      $this->templateFinder->find($button)
+    );
+  }
 }

@@ -7,34 +7,34 @@ use Gang\WebComponents\Helpers\Str;
 
 class StrTest extends TestCase
 {
-    public function testEmpty()
-    {
-        $this->assertEquals('', Str::snake(''));
-    }
+  public function testEmpty()
+  {
+    $this->assertEquals('', Str::snake(''));
+  }
 
-    public function testOneWord()
-    {
-        $this->assertEquals('snake', Str::snake('snake'));
-    }
+  public function testOneWord()
+  {
+    $this->assertEquals('snake', Str::snake('snake'));
+  }
 
-    public function testOneWordFirstUpper()
-    {
-        $this->assertEquals('snake', Str::snake('Snake'));
-    }
+  public function testOneWordFirstUpper()
+  {
+    $this->assertEquals('snake', Str::snake('Snake'));
+  }
 
-    public function testCamel()
-    {
-        $this->assertEquals('snake_case', Str::snake('snakeCase'));
-        $this->assertEquals('class_name', Str::snake('className'));
-    }
+  public function testCamel()
+  {
+    $this->assertEquals('snake_case', Str::snake('snakeCase'));
+    $this->assertEquals('class_name', Str::snake('className'));
+  }
 
-    public function testAlreadySnake()
-    {
-        $this->assertEquals('snake_case', Str::snake('snake_case'));
-    }
+  public function testAlreadySnake()
+  {
+    $this->assertEquals('snake_case', Str::snake('snake_case'));
+  }
 
-    public function testFirstUpperCamel()
-    {
-        $this->assertEquals('snake_case', Str::snake('SnakeCase'));
-    }
+  public function testFirstUpperCamel()
+  {
+    $this->assertEquals('snake_case', Str::snake('SnakeCase'));
+  }
 }
