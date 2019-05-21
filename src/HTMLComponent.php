@@ -111,8 +111,15 @@ abstract class HTMLComponent
     {
       foreach ($this->DOMElement->childNodes as $child) {
         if (Dom::isWebComponent($child)) {
-          $element =  $factory->create($child);
-          $this->innerHtml .= $element->render($renderer, $dom, $factory);
+          $HTMLComponentChild =  $factory->create($child);
+          if ($HTMLComponentChild->class_name) {
+            $HTMLComponent_rendered = $HTMLComponentChild->render($renderer, $dom, $factory);
+            $auxDom = Dom::domFromString($HTMLComponent_rendered);
+            $renderer->addClassAtributesNotYetAdded($HTMLComponentChild->class_name, $auxDom->childNodes[1]);
+            $this->innerHtml .= $auxDom->saveHTML($auxDom->childNodes[1]);
+          }else{
+            $this->innerHtml .= $HTMLComponentChild->render($renderer, $dom, $factory);
+          }
         }else {
           $this->innerHtml .= $dom->saveHTML($child);
         }

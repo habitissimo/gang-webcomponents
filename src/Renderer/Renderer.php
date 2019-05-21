@@ -49,7 +49,7 @@ class Renderer
     }
 
 
-    private function addClassAtributesNotYetAdded($className,$element)
+    public function addClassAtributesNotYetAdded($className,$element)
     {
       if($className){
         $componentClassAttributes =  explode(" ",$element->getAttribute("class"));
@@ -57,5 +57,5 @@ class Renderer
         $classAtributesNoAddedYet = array_diff($classNameAtributes, $componentClassAttributes);
         $element->setAttribute('class', $element->getAttribute("class") ." ". implode(" ", $classAtributesNoAddedYet));
       }
-  }
+    }
 }
