@@ -34,14 +34,16 @@ class Dom
     libxml_use_internal_errors(true);
     $dom = new \DOMDocument();
     $dom->loadHtml(utf8_decode($html), LIBXML_HTML_NOIMPLIED | LIBXML_NONET);
-    if(libxml_get_errors()) {
+    if(libxml_get_errors() && $logger) {
       $message = "";
       foreach (libxml_get_errors() as $error) {
         if (strpos($error->message , "wc-") === false & strpos($error->message , "replace-script") === false){
-          $message .=  $error->message . " | ";
+          $message .=  "Warning: {$error->message} | ";
         }
       }
-      $logger->warning($message);
+      if(strlen($message)>0){
+        $logger->warning($message);
+      }
     }
     libxml_clear_errors();
     return $dom;
