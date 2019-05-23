@@ -5,7 +5,6 @@ namespace Gang\WebComponents;
 
 use Gang\WebComponents\Exceptions\ComponentAttributeNotFound;
 use Gang\WebComponents\Helpers\Dom;
-use Gang\WebComponents\Helpers\Str;
 use Gang\WebComponents\Parser\Nodes\WebComponent;
 
 abstract class HTMLComponent
@@ -40,11 +39,7 @@ abstract class HTMLComponent
     if ($name === "classname") {
       $this->class_name = $value;
     }
-
-
-    $attr_name = Str::snake($name);
-    $this->{$attr_name} = $value;
-
+    $this->{$name} = $value;
 
     return; // TODO: should we keep the validation here?
 

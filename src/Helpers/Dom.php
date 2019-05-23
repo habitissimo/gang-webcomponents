@@ -2,6 +2,8 @@
 
 namespace Gang\WebComponents\Helpers;
 
+use BasicLogger;
+
 class Dom
 {
   public static function create()
@@ -27,12 +29,20 @@ class Dom
     return $dom->saveHtml($element);
   }
 
-  public static function domFromString(string $html)
+  public static function domFromString(string $html, ?BasicLogger $logger = null)
   {
     libxml_use_internal_errors(true);
     $dom = new \DOMDocument();
     $dom->loadHtml(utf8_decode($html), LIBXML_HTML_NOIMPLIED | LIBXML_NONET);
-    libxml_get_errors();
+    if(libxml_get_errors()) {
+      $message = "";
+      foreach (libxml_get_errors() as $error) {
+        if (strpos($error->message , "wc-") === false & strpos($error->message , "replace-script") === false){
+          $message .=  $error->message . " | ";
+        }
+      }
+      $logger->warning($message);
+    }
     libxml_clear_errors();
     return $dom;
   }

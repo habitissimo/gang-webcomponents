@@ -3,35 +3,29 @@ declare(strict_types=1);
 
 namespace Gang\WebComponents;
 
+use BasicLogger;
 use Gang\WebComponents\Helpers\Dom;
-use Gang\WebComponents\Logger\WebComponentLogger;
 use Gang\WebComponents\Renderer\Renderer;
 use Gang\WebComponents\Renderer\TwigTemplateRenderer;
-use Psr\Log\LoggerInterface;
 
 class WebComponentController
 {
-
-  static $instance;
   private $factory;
   private $renderer;
 
   private $dom;
   private $xpath;
-
+  private $scripts;
+  private $logger;
 
   public function __construct(
-    ?ComponentLibrary $library = null, ?LoggerInterface $logger = null
+    ?ComponentLibrary $library = null, ?BasicLogger $logger = null
   )
   {
     $library = $library ?? new ComponentLibrary();
     $this->factory = new HTMLComponentFactory($library);
     $this->renderer = new Renderer(new TwigTemplateRenderer(), $library);
-    if (null !== $logger) {
-      WebComponentLogger::setLogger($logger);
-    }
-
-    self::$instance = $this;
+    $this->logger = $logger;
   }
 
   /**
@@ -41,7 +35,8 @@ class WebComponentController
    */
   public function process(string $content): string
   {
-    $this->dom = Dom::domFromString($content);
+    $preProcessContent = $this->preProcess($content);
+    $this->dom = Dom::domFromString($preProcessContent, $this->logger);
     $this->xpath = new \DOMXpath($this->dom);
     $HTMLComponents = $this->getParentWebComponents();
 
@@ -53,7 +48,42 @@ class WebComponentController
       $HTMLComponents = $this->getParentWebComponents();
     }
 
-    return $this->dom->saveHTML();
+    return $this->postProcess($this->dom->saveHTML());
+  }
+
+  private function preProcess($content) : string
+  {
+    $matches = [];
+    $openScript = "<script";
+    $closeScript = "</script>";
+    preg_match_all( "/<script.*?>.*<\/script>/", $content , $matches, PREG_OFFSET_CAPTURE);
+    $i = 0;
+    foreach ($matches[0] as list($script, $_)) {
+      $comment = "<replace-script>var = 'script-[{$i}]'</replace-script>";
+      $this->scripts[] = [$script, $comment];
+      $content = str_replace($script, $comment, $content);
+      $i++;
+    }
+
+    while (strpos($content, $openScript)){
+      $start = strpos($content, $openScript);
+      $length = strpos($content, $closeScript) - $start+strlen($closeScript);
+      $script = substr($content, $start, $length);
+      $comment = "<replace-script>var = 'script-[{$i}]'</replace-script>";
+      $this->scripts[] = [$script, $comment];
+      $content = str_replace($script, $comment, $content);
+      $i++;
+    }
+    return $content;
+  }
+
+  private function postProcess($content){
+    if($this->scripts) {
+      foreach ($this->scripts as list($script, $comment)) {
+        $content = str_replace($comment, $script, $content);
+      }
+    }
+    return $content;
   }
 
   /**
