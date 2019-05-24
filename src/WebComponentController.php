@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Gang\WebComponents;
 
-use BasicLogger;
+use Psr\Log\LoggerInterface;
 use Gang\WebComponents\Helpers\Dom;
 use Gang\WebComponents\Renderer\Renderer;
 use Gang\WebComponents\Renderer\TwigTemplateRenderer;
@@ -15,17 +15,15 @@ class WebComponentController
 
   private $dom;
   private $xpath;
-  private $scripts;
+
   private $logger;
 
-  public function __construct(
-    ?ComponentLibrary $library = null, ?BasicLogger $logger = null
-  )
+  public function __construct(LoggerInterface $logger, ?ComponentLibrary $library = null)
   {
     $library = $library ?? new ComponentLibrary();
     $this->factory = new HTMLComponentFactory($library);
     $this->renderer = new Renderer(new TwigTemplateRenderer(), $library);
-    $this->logger = $logger;
+    $this->logger = $logger->withName(__CLASS__);
   }
 
   /**
@@ -35,7 +33,8 @@ class WebComponentController
    */
   public function process(string $content): string
   {
-    $preProcessContent = $this->preProcess($content);
+    $stratProcees = round(microtime(true) * 1000);
+    $preProcessContent = Dom::preProcess($content);
     $this->dom = Dom::domFromString($preProcessContent, $this->logger);
     $this->xpath = new \DOMXpath($this->dom);
     $HTMLComponents = $this->getParentWebComponents();
@@ -47,44 +46,14 @@ class WebComponentController
       }
       $HTMLComponents = $this->getParentWebComponents();
     }
-
-    return $this->postProcess($this->dom->saveHTML());
+    $response = Dom::postProcess($this->dom->saveHTML());
+    $endProcess = round(microtime(true) * 1000) - $stratProcees;
+    $this->logger->info("Time to render the page: {$endProcess}ms");
+    return $response;
   }
 
-  private function preProcess($content) : string
-  {
-    $matches = [];
-    $openScript = "<script";
-    $closeScript = "</script>";
-    preg_match_all( "/<script.*?>.*<\/script>/", $content , $matches, PREG_OFFSET_CAPTURE);
-    $i = 0;
-    foreach ($matches[0] as list($script, $_)) {
-      $comment = "<replace-script>var = 'script-[{$i}]'</replace-script>";
-      $this->scripts[] = [$script, $comment];
-      $content = str_replace($script, $comment, $content);
-      $i++;
-    }
 
-    while (strpos($content, $openScript)){
-      $start = strpos($content, $openScript);
-      $length = strpos($content, $closeScript) - $start+strlen($closeScript);
-      $script = substr($content, $start, $length);
-      $comment = "<replace-script>var = 'script-[{$i}]'</replace-script>";
-      $this->scripts[] = [$script, $comment];
-      $content = str_replace($script, $comment, $content);
-      $i++;
-    }
-    return $content;
-  }
 
-  private function postProcess($content){
-    if($this->scripts) {
-      foreach ($this->scripts as list($script, $comment)) {
-        $content = str_replace($comment, $script, $content);
-      }
-    }
-    return $content;
-  }
 
   /**
    * Return array of WebComponents that not have WebComponent parents
