@@ -33,7 +33,9 @@ class WebComponentController
    */
   public function process(string $content): string
   {
-    $stratProcees = round(microtime(true) * 1000);
+    if(Configuration::$log_enable && Configuration::$log_level_performance) {
+      $startProcees = round(microtime(true) * 1000);
+    }
     $preProcessContent = Dom::preProcess($content);
     $this->dom = Dom::domFromString($preProcessContent, $this->logger);
     $this->xpath = new \DOMXpath($this->dom);
@@ -47,8 +49,10 @@ class WebComponentController
       $HTMLComponents = $this->getParentWebComponents();
     }
     $response = Dom::postProcess($this->dom->saveHTML());
-    $endProcess = round(microtime(true) * 1000) - $stratProcees;
-    $this->logger->info("Time to render the page: {$endProcess}ms");
+    if(Configuration::$log_enable && Configuration::$log_level_performance) {
+      $endProcess = round(microtime(true) * 1000) - $startProcees;
+      $this->logger->info("Time to render the page: {$endProcess}ms");
+    }
     return $response;
   }
 

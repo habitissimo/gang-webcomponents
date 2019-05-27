@@ -11,4 +11,8 @@ class Configuration
   static $library_base_namespace = "";
   static $library_template_dir = "";
   static $twig_cache_path = null;
+  static $log_enable = false;
+  static $log_level_warning= true;
+  static $log_level_info = true;
+  static $log_level_performance = true;
 }

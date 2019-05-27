@@ -2,10 +2,13 @@
 
 namespace Gang\WebComponents\Helpers;
 
+use Gang\WebComponents\Configuration;
 use Psr\Log\LoggerInterface;
 
 class Dom
 {
+  public static $tagsToReplace = ["script", "noscript"];
+  private static $contentToReplace = [];
   private static $scripts = [];
   private static $noScripts = [];
 
@@ -39,7 +42,7 @@ class Dom
     $html =  iconv('UTF-8', 'UTF-8//IGNORE', $html);
     $html = mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8');
     $dom->loadHtml($html, LIBXML_HTML_NOIMPLIED | LIBXML_NONET);
-    if (libxml_get_errors() && $logger) {
+    if (libxml_get_errors() && $logger && Configuration::$log_enable) {
       Dom::showErrors(libxml_get_errors(), $logger);
     }
     libxml_clear_errors();
@@ -48,12 +51,22 @@ class Dom
 
   public static function preProcess($content): string
   {
-    return Dom::preProcesNoScipt(Dom::preProcesScipt($content));
+    foreach (Dom::$tagsToReplace as $replace) {
+      $content = Dom::replaceTags($content, $replace);
+    }
+    return $content;
   }
 
   public static function postProcess($content)
   {
-    return Dom::postProcessNoScript(Dom::postProcessScript($content));
+    if (Dom::$contentToReplace) {
+      foreach (Dom::$contentToReplace as $foo) {
+        foreach ($foo as list($script, $comment)) {
+          $content = str_replace($comment, $script, $content);
+        }
+      }
+    }
+    return $content;
   }
 
   public static function isWebComponent(\DomNode $element): bool
@@ -64,83 +77,37 @@ class Dom
   private static function showErrors($errors, $logger) : void
   {
     foreach ($errors as $error) {
-      if ($error->code === 801) {
-        $logger->info($error->message);
+      if ($error->code === 801 || $error->code === 23 ||  $error->code ===  513 ) {
+        if(Configuration::$log_level_info) {
+          $logger->info($error->message);
+        }
       }else {
-        $logger->warning($error->message);
+        if (Configuration::$log_level_warning){
+          $logger->warning($error->message);
+        }
       }
     }
   }
 
-  private static function preProcesNoScipt($content)
+  private static function replaceTags($content, $replace)
   {
-    $matches = [];
-    $openScript = "<noscript";
-    $closeScript = "</noscript>";
-    preg_match_all("/<noscript.*?>.*<\/noscript>/", $content, $matches, PREG_OFFSET_CAPTURE);
+    $replacements = [];
+    $openTag = "<{$replace}";
+    $closeTag = "</{$replace}>";
+
     $i = 0;
-    foreach ($matches[0] as list($noscript, $_)) {
-      $comment = '<replace-noscript id="replace-noscript-'.$i.'"></replace-noscript>';
-      Dom::$noScripts[] = [$noscript, $comment];
-      $content = str_replace($noscript, $comment, $content);
+    while (strpos($content, $openTag)) {
+      $start = strpos($content, $openTag);
+      $length = strpos($content, $closeTag) - $start + strlen($closeTag);
+      $element = substr($content, $start, $length);
+      $comment = '<replace-'.$replace.' id="replace-'.$replace.'-'.$i.'"></replace-'.$replace.'>';
+      $replacements[] = [$element, $comment];
+
+      $content = substr_replace($content, $comment, $start, strlen($element));
+
       $i++;
     }
-
-    while (strpos($content, $openScript)) {
-      $start = strpos($content, $openScript);
-      $length = strpos($content, $closeScript) - $start + strlen($closeScript);
-      $noscript = substr($content, $start, $length);
-      $comment = '<replace-noscript id="replace-noscript-'.$i.'"></replace-noscript>';
-      Dom::$noScripts[] = [$noscript, $comment];
-      $content = str_replace($noscript, $comment, $content);
-      $i++;
-    }
-    return $content;
-  }
-
-  private static function preProcesScipt($content)
-  {
-    $matches = [];
-    $openScript = "<script";
-    $closeScript = "</script>";
-    preg_match_all("/<script.*?>.*<\/script>/", $content, $matches, PREG_OFFSET_CAPTURE);
-    $i = 0;
-    foreach ($matches[0] as list($script, $_)) {
-      $comment = '<replace-script id="replace-script-'.$i.'"></replace-script>';
-      Dom::$scripts[] = [$script, $comment];
-      $content = str_replace($script, $comment, $content);
-      $i++;
-    }
-
-    while (strpos($content, $openScript)) {
-      $start = strpos($content, $openScript);
-      $length = strpos($content, $closeScript) - $start + strlen($closeScript);
-      $script = substr($content, $start, $length);
-      $comment = '<replace-script id="replace-script-'.$i.'"></replace-script>';
-      Dom::$scripts[] = [$script, $comment];
-      $content = str_replace($script, $comment, $content);
-      $i++;
-    }
-    return $content;
-  }
-
-  private static function postProcessNoScript($content)
-  {
-    if (Dom::$noScripts) {
-      foreach (Dom::$noScripts as list($noScript, $comment)) {
-        $content = str_replace($comment, $noScript, $content);
-      }
-    }
-    return $content;
-  }
-
-  private static function postProcessScript($content)
-  {
-    if (Dom::$scripts) {
-      foreach (Dom::$scripts as list($script, $comment)) {
-        $content = str_replace($comment, $script, $content);
-      }
-    }
+    Dom::$contentToReplace[] = $replacements;
     return $content;
   }
 
