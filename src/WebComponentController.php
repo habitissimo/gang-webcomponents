@@ -44,8 +44,8 @@ class WebComponentController
 
     while ($HTMLComponents) {
       foreach ($HTMLComponents as $htmlComponent) {
-        $renderer_component = $htmlComponent->render($this->renderer, $this->dom, $this->factory);
-        $this->renderer->replaceChildNodeToWebComponetRendered($renderer_component, $htmlComponent, $this->dom);
+        $renderer_component = $htmlComponent->render($this->renderer, $this->dom, $this->factory, $this->logger);
+        $this->renderer->replaceChildNodeToWebComponetRendered($renderer_component, $htmlComponent, $this->dom, $this->logger);
       }
       $HTMLComponents = $this->getParentWebComponents();
     }

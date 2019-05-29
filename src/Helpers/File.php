@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Gang\WebComponents\Helpers;
 
+use Gang\WebComponents\Configuration;
+
 class File
 {
   /**
@@ -62,5 +64,26 @@ class File
   public static function getNameSpaceFromFolder(string $relative_dir): string
   {
     return str_replace(DIRECTORY_SEPARATOR, '\\', $relative_dir);
+  }
+
+  /**
+   * @param $html
+   * @return void
+   */
+  public static function createErrorFile($html): void
+  {
+    $date = date("Y-m-d_H:i:s");
+    $path = Configuration::$error_file_path;
+
+    if (substr($path, -1) === "/") {
+      $path = substr($path, 0, -1);
+    }
+    if ($path === "" || $path === "/") {
+      $f = fopen("../Error_" . $date . ".html", "w");
+    } else {
+      $f = fopen("../{$path}/Error_" . $date . ".html", "w");
+    }
+    fwrite($f, $html);
+    fclose($f);
   }
 }

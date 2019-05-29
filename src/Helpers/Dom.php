@@ -2,7 +2,6 @@
 
 namespace Gang\WebComponents\Helpers;
 
-use Gang\WebComponents\Configuration;
 use Psr\Log\LoggerInterface;
 
 class Dom
@@ -34,16 +33,14 @@ class Dom
     return $dom->saveHtml($element);
   }
 
-  public static function domFromString(string $html, ?LoggerInterface $logger = null)
+  public static function domFromString(string $html, $logger)
   {
     libxml_use_internal_errors(true);
     $dom = new \DOMDocument();
     $html =  iconv('UTF-8', 'UTF-8//IGNORE', $html);
     $html = mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8');
     $dom->loadHtml($html, LIBXML_HTML_NOIMPLIED | LIBXML_NONET);
-    if (libxml_get_errors() && $logger && Configuration::$log_enable) {
-      Log::showLibXMLErrors(libxml_get_errors(), $logger,Dom::$errorCodes, $html);
-    }
+    Log::showLibXMLErrors(libxml_get_errors(), $logger, Dom::$errorCodes, $html);
     libxml_clear_errors();
     return $dom;
   }

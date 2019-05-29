@@ -39,9 +39,9 @@ class Renderer
     return $rendered;
   }
 
-  public function replaceChildNodeToWebComponetRendered($webcomponent_rendered, $HTMLComponent, $dom)
+  public function replaceChildNodeToWebComponetRendered($webcomponent_rendered, $HTMLComponent, $dom, $logger)
   {
-    $newDOM = Dom::domFromString($webcomponent_rendered);
+    $newDOM = Dom::domFromString($webcomponent_rendered, $logger);
     $dom_element_renderer = $newDOM->childNodes[1];
 
     $this->addClassAtributesNotYetAdded($HTMLComponent->class_name, $dom_element_renderer);

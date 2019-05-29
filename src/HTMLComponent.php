@@ -104,18 +104,18 @@ abstract class HTMLComponent
     return strpos($attrName, "data-") === 0;
   }
 
-  public function render($renderer, $dom = null, $factory = null)
+  public function render($renderer, $dom , $factory, $logger)
   {
     foreach ($this->DOMElement->childNodes as $child) {
       if (Dom::isWebComponent($child)) {
         $HTMLComponentChild = $factory->create($child);
         if ($HTMLComponentChild->class_name) {
-          $HTMLComponent_rendered = $HTMLComponentChild->render($renderer, $dom, $factory);
-          $auxDom = Dom::domFromString($HTMLComponent_rendered);
+          $HTMLComponent_rendered = $HTMLComponentChild->render($renderer, $dom, $factory, $logger);
+          $auxDom = Dom::domFromString($HTMLComponent_rendered, $logger);
           $renderer->addClassAtributesNotYetAdded($HTMLComponentChild->class_name, $auxDom->childNodes[1]);
           $this->innerHtml .= $auxDom->saveHTML($auxDom->childNodes[1]);
         } else {
-          $this->innerHtml .= $HTMLComponentChild->render($renderer, $dom, $factory);
+          $this->innerHtml .= $HTMLComponentChild->render($renderer, $dom, $factory, $logger);
         }
       } else {
         $this->innerHtml .= $dom->saveHTML($child);
