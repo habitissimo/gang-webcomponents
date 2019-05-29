@@ -30,7 +30,7 @@ class RendererTest extends TestCase
     $this->componentLibrary = $this->prophet->prophesize(ComponentLibrary::class);
     $this->templateRenderer = $this->prophet->prophesize(TemplateRendererInterface::class);
     $this->renderer = new Renderer($this->templateRenderer->reveal(), $this->componentLibrary->reveal());
-    $this->controller = new WebComponentController($this->componentLibrary->reveal());
+    $this->controller = new WebComponentController(null, $this->componentLibrary->reveal());
   }
 
   public function testRenderComponent(): void

@@ -3,7 +3,10 @@ declare(strict_types=1);
 
 namespace Gang\WebComponents;
 
+
+use Gang\WebComponents\Logger\NullLogger;
 use Psr\Log\LoggerInterface;
+use Gang\WebComponents\Helpers\Log;
 use Gang\WebComponents\Helpers\Dom;
 use Gang\WebComponents\Renderer\Renderer;
 use Gang\WebComponents\Renderer\TwigTemplateRenderer;
@@ -18,12 +21,12 @@ class WebComponentController
 
   private $logger;
 
-  public function __construct(LoggerInterface $logger, ?ComponentLibrary $library = null)
+  public function __construct(?LoggerInterface $logger = null, ?ComponentLibrary $library = null)
   {
     $library = $library ?? new ComponentLibrary();
     $this->factory = new HTMLComponentFactory($library);
     $this->renderer = new Renderer(new TwigTemplateRenderer(), $library);
-    $this->logger = $logger->withName(__CLASS__);
+    $this->logger = $logger ?? new NullLogger();
   }
 
   /**
@@ -33,9 +36,7 @@ class WebComponentController
    */
   public function process(string $content): string
   {
-    if(Configuration::$log_enable && Configuration::$log_level_performance) {
-      $startProcees = round(microtime(true) * 1000);
-    }
+    Log::startLogPerformace();
     $preProcessContent = Dom::preProcess($content);
     $this->dom = Dom::domFromString($preProcessContent, $this->logger);
     $this->xpath = new \DOMXpath($this->dom);
@@ -49,10 +50,7 @@ class WebComponentController
       $HTMLComponents = $this->getParentWebComponents();
     }
     $response = Dom::postProcess($this->dom->saveHTML());
-    if(Configuration::$log_enable && Configuration::$log_level_performance) {
-      $endProcess = round(microtime(true) * 1000) - $startProcees;
-      $this->logger->info("Time to render the page: {$endProcess}ms");
-    }
+    Log::endLogPerformance($this->logger);
     return $response;
   }
 

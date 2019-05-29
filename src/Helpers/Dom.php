@@ -8,9 +8,8 @@ use Psr\Log\LoggerInterface;
 class Dom
 {
   public static $tagsToReplace = ["script", "noscript"];
+  public static $errorCodes = [801 ,23 ,513 ,68 ];
   private static $contentToReplace = [];
-  private static $scripts = [];
-  private static $noScripts = [];
 
   public static function create()
   {
@@ -43,7 +42,7 @@ class Dom
     $html = mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8');
     $dom->loadHtml($html, LIBXML_HTML_NOIMPLIED | LIBXML_NONET);
     if (libxml_get_errors() && $logger && Configuration::$log_enable) {
-      Dom::showErrors(libxml_get_errors(), $logger);
+      Log::showLibXMLErrors(libxml_get_errors(), $logger,Dom::$errorCodes, $html);
     }
     libxml_clear_errors();
     return $dom;
@@ -72,21 +71,6 @@ class Dom
   public static function isWebComponent(\DomNode $element): bool
   {
     return substr($element->nodeName, 0, 3) === "wc-";
-  }
-
-  private static function showErrors($errors, $logger) : void
-  {
-    foreach ($errors as $error) {
-      if ($error->code === 801 || $error->code === 23 ||  $error->code ===  513 ) {
-        if(Configuration::$log_level_info) {
-          $logger->info($error->message);
-        }
-      }else {
-        if (Configuration::$log_level_warning){
-          $logger->warning($error->message);
-        }
-      }
-    }
   }
 
   private static function replaceTags($content, $replace)

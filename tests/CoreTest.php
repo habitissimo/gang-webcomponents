@@ -5,6 +5,7 @@ namespace Gang\WebComponentsTests;
 
 use Doctrine\Common\Cache\FilesystemCache;
 use Gang\WebComponents\Configuration;
+use Gang\WebComponents\NullLogger;
 use Gang\WebComponents\Parser\NewParser;
 use Gang\WebComponents\WebComponentController;
 use Gang\WebComponents\HTMLComponent;
@@ -23,11 +24,11 @@ use PHPUnit\Framework\TestCase;
 
 use Prophecy\Prophet;
 use Prophecy\Argument;
+use Psr\Log\LoggerInterface;
 
 final class CoreTests extends TestCase
 {
   private $prophet;
-  private $parser;
   private $renderer;
   private $loader;
   private $controller;
@@ -57,13 +58,12 @@ final class CoreTests extends TestCase
     $this->loader = $this->prophet->prophesize(ComponentLibrary::class);
     $this->factory = $this->prophet->prophesize(HTMLComponentFactory::class);
 
-
     Configuration::$library_base_namespace = "Gang\WebComponentsTests\WebComponents";
     Configuration::$library_template_dir = __DIR__ . DIRECTORY_SEPARATOR . "WebComponents";
     $lib = new ComponentLibrary();
 
 
-    $this->controller = new WebComponentController(
+    $this->controller = new WebComponentController(null,
       $lib
     );
   }
@@ -108,7 +108,7 @@ final class CoreTests extends TestCase
     Configuration::$library_template_dir = __DIR__ . DIRECTORY_SEPARATOR . "WebComponents";
     Configuration::$library_base_namespace = "Gang\WebComponentsTests\WebComponents";
     $lib = new ComponentLibrary();
-    $controller = new WebComponentController($lib);
+    $controller = new WebComponentController(null, $lib);
     $parsed_template = $controller->process(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . "WebComponents" . DIRECTORY_SEPARATOR . "IntegrationTest.twig"));
     $this->assertEquals($this->integrationHtmlResult, $parsed_template);
   }
