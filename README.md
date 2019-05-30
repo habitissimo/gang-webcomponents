@@ -1,8 +1,8 @@
 
-#gang/webcomponent
+# gang/webcomponent
   gang/webcomponents uses DomDocument to parse the document, for this reason [XML errors](http://www.xmlsoft.org/html/libxml-xmlerror.html) may appear.
   
-#How to create components
+# How to create components
 To create the custom components, you must create a directory with the name of the component in PascalCase,
 inside this folder there must be at least two files,
 * **The PHP class component:** This will be a flat class with all its attributes, its default values, setters and getters. 
@@ -58,7 +58,7 @@ Now let's see the template twig
         {{ children | raw }}
 </input>
 ```
-##Warning!
+## Warning!
 The elements must always be wrapped in a tag. if they are not wrapped in a tag it may not show the expected result or 
 cause an error.
 ```html
@@ -72,19 +72,19 @@ cause an error.
     <button>Im button</button>
   </div>
 ```
-##Tip
+## Tip
 
 To add the class attribute you must write the classname, remember that we use DomDocument, therefore, everything will 
 be converted to lowercase.
 
-#How to use webcomponents
+# How to use webcomponents
 We already have the webcomponents created, it's time to use them.
 
 To use them we must add the prefix ``wc-`` plus the name of the component in kebab case
 ```html
 <wc-cool-input be-cool="true">I'm the coolest</wc-cool-input>
 ```
-#WebComponentController
+# WebComponentController
 The WebComponentController class is the one that provides the html and will replace the webcomponents with the twig template of that component.
 
 Before the instance, we must do some previous steps, we must add the configuration, below it explains the options in detail.
@@ -110,7 +110,7 @@ Let's see a quick example
   ```
 
 
-#Configuration
+# Configuration
 We have a Configuration class with which you can configure the following parameters:
 
 * **library_cache_driver:**
