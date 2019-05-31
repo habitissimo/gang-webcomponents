@@ -7,6 +7,7 @@ use Gang\WebComponents\ComponentLibrary;
 use Gang\WebComponents\Contracts\TemplateRendererInterface;
 use Gang\WebComponents\Helpers\Dom;
 use Gang\WebComponents\HTMLComponent;
+use Gang\WebComponents\Logger\NullLogger;
 use Gang\WebComponents\Renderer\Renderer;
 use Gang\WebComponents\WebComponentController;
 use Gang\WebComponentsTests\WebComponents\Button\ShareSocial\TwitterShareSocialButton;
@@ -22,6 +23,7 @@ class RendererTest extends TestCase
   private $templateRenderer;
   private $renderer;
   private $controller;
+  private $logger;
 
   public function setUp(): void
   {
@@ -31,6 +33,7 @@ class RendererTest extends TestCase
     $this->templateRenderer = $this->prophet->prophesize(TemplateRendererInterface::class);
     $this->renderer = new Renderer($this->templateRenderer->reveal(), $this->componentLibrary->reveal());
     $this->controller = new WebComponentController(null, $this->componentLibrary->reveal());
+    $this->logger = new NullLogger();
   }
 
   public function testRenderComponent(): void
@@ -41,7 +44,7 @@ class RendererTest extends TestCase
     $button = new $buttonComponentClass();
 
     $class_name = "wc-button";
-    $dom = Dom::domFromString("<wc-button>");
+    $dom = Dom::domFromString("<wc-button>", $this->logger);
     $button->setDOMElement($dom->childNodes[1]);
 
     $this->componentLibrary
@@ -91,7 +94,7 @@ class RendererTest extends TestCase
     };
     $button = new $buttonComponentClass();
     $class_name = "wc-twitter-share-social-button";
-    $dom = Dom::domFromString("<wc-twitter-share-social-button>");
+    $dom = Dom::domFromString("<wc-twitter-share-social-button>", $this->logger);
     $button->setDOMElement($dom->childNodes[1]);
 
     $this->componentLibrary->getTemplateContent($class_name, ".twig")

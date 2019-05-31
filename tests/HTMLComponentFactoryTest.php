@@ -6,6 +6,7 @@ use Gang\WebComponents\Helpers\Dom;
 use Gang\WebComponents\HTMLComponent;
 use Gang\WebComponents\HTMLComponentFactory;
 use Gang\WebComponents\ComponentLibrary;
+use Gang\WebComponents\Logger\NullLogger;
 use Gang\WebComponents\Parser\Nodes\WebComponent;
 
 use Gang\WebComponents\Parser\Parser;
@@ -41,6 +42,7 @@ class HTMLComponentFactoryTest extends TestCase
 {
   private $prophet;
   private $library;
+  private $logger;
   private $webcomponent;
 
 
@@ -48,6 +50,7 @@ class HTMLComponentFactoryTest extends TestCase
   {
     $this->prophet = new Prophet();
     $this->library = $this->prophet->prophesize(ComponentLibrary::class);
+    $this->logger  = new NullLogger();
   }
 
   public function testPublicAttrComponent(): void
@@ -55,7 +58,7 @@ class HTMLComponentFactoryTest extends TestCase
     $button = new PublicAttrsComponent();
     $button->id = "habitissimo";
 
-    $dom = Dom::domFromString("<wc-button id='habitissimo'>Habitissimo</wc-button>");
+    $dom = Dom::domFromString("<wc-button id='habitissimo'>Habitissimo</wc-button>", $this->logger);
     $button->setDOMElement($dom->childNodes[1]);
 
     $this->library->getComponentClass("wc-button")
@@ -71,7 +74,7 @@ class HTMLComponentFactoryTest extends TestCase
     $input = new ProtectedAttrsComponent();
     $input->setId("testing-input");
 
-    $dom = Dom::domFromString("<wc-input-text id='testing-input'>");
+    $dom = Dom::domFromString("<wc-input-text id='testing-input'>", $this->logger);
     $input->setDOMElement($dom->childNodes[1]);
 
     $this->library->getComponentClass('wc-input-text')
@@ -83,12 +86,7 @@ class HTMLComponentFactoryTest extends TestCase
 
   public function testPreRender(): void
   {
-//        $this->webcomponent->getChildren()->willReturn([]);
-//        $this->webcomponent->getTagName()->willReturn('TagName');
-//        $this->webcomponent->getAttr()->willReturn([]);
-//        $this->webcomponent->getInnerHtml()->willReturn("");
-
-    $dom = Dom::domFromString("<wc-tag-name></wc-tag-name>");
+    $dom = Dom::domFromString("<wc-tag-name></wc-tag-name>", $this->logger);
 
     $this->library->getComponentClass('wc-tag-name')
       ->willReturn(PreRenderComponent::class);
