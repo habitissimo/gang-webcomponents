@@ -63,6 +63,11 @@ abstract class HTMLComponent
 
   }
 
+  public function getRequiredFields(): array
+  {
+    return $this->required_fields;
+  }
+
   public function setInnerHtml(string $html)
   {
     $this->innerHtml = $html;

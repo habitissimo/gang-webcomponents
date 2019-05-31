@@ -23,10 +23,10 @@ class WebComponentController
 
   public function __construct(?LoggerInterface $logger = null, ?ComponentLibrary $library = null)
   {
-    $library = $library ?? new ComponentLibrary();
-    $this->factory = new HTMLComponentFactory($library);
-    $this->renderer = new Renderer(new TwigTemplateRenderer(), $library);
     $this->logger = $logger ?? new NullLogger();
+    $library = $library ?? new ComponentLibrary();
+    $this->factory = new HTMLComponentFactory($library, $this->logger );
+    $this->renderer = new Renderer(new TwigTemplateRenderer(), $library);
   }
 
   /**
