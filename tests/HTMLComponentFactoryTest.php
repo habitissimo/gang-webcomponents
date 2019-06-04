@@ -63,7 +63,7 @@ class HTMLComponentFactoryTest extends TestCase
 
     $this->library->getComponentClass("wc-button")
       ->willReturn(PublicAttrsComponent::class);
-    $factory = new HTMLComponentFactory($this->library->reveal());
+    $factory = new HTMLComponentFactory($this->library->reveal(),$this->logger);
     $HtmlComponent = $factory->create($dom->childNodes[1]);
     $this->assertEquals($button, $HtmlComponent);
 
@@ -79,7 +79,7 @@ class HTMLComponentFactoryTest extends TestCase
 
     $this->library->getComponentClass('wc-input-text')
       ->willReturn(ProtectedAttrsComponent::class);
-    $factory = new HTMLComponentFactory($this->library->reveal());
+    $factory = new HTMLComponentFactory($this->library->reveal(), $this->logger);
 
     $this->assertEquals($input, $factory->create($dom->childNodes[1]));
   }
@@ -90,7 +90,7 @@ class HTMLComponentFactoryTest extends TestCase
 
     $this->library->getComponentClass('wc-tag-name')
       ->willReturn(PreRenderComponent::class);
-    $factory = new HTMLComponentFactory($this->library->reveal());
+    $factory = new HTMLComponentFactory($this->library->reveal(), $this->logger);
 
     $this->assertEquals("something", $factory->create($dom->childNodes[1])->prerendered_content);
   }

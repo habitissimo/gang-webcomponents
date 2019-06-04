@@ -54,9 +54,6 @@ class WebComponentController
     return $response;
   }
 
-
-
-
   /**
    * Return array of WebComponents that not have WebComponent parents
    * @param void

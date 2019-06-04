@@ -2,12 +2,10 @@
 
 namespace Gang\WebComponents\Helpers;
 
-use Psr\Log\LoggerInterface;
-
 class Dom
 {
   public static $tagsToReplace = ["script", "noscript"];
-  public static $errorCodes = [801 ,23 ,513 ,68 ];
+  public static $errorCodes = [801, 23, 513, 68];
   private static $contentToReplace = [];
 
   public static function create()
@@ -15,29 +13,11 @@ class Dom
     return new \DOMDocument();
   }
 
-
-  // When $html value contains more than one element must be throw exception
-
-  public static function elementFromString(\DOMDocument $dom, string $html)
-  {
-    libxml_use_internal_errors(true); // supress malformed html warnings
-    $dom->substituteEntities = false;
-    $dom->loadHtml($html, LIBXML_HTML_NOIMPLIED | LIBXML_NONET | LIBXML_NOBLANKS);
-    libxml_clear_errors();
-    libxml_use_internal_errors(false); // restore normal behavior
-    return $dom->childNodes[1];
-  }
-
-  public static function elementToString(\DOMDocument $dom, $element)
-  {
-    return $dom->saveHtml($element);
-  }
-
   public static function domFromString(string $html, $logger)
   {
     libxml_use_internal_errors(true);
     $dom = new \DOMDocument();
-    $html =  iconv('UTF-8', 'UTF-8//IGNORE', $html);
+    $html = iconv('UTF-8', 'UTF-8//IGNORE', $html);
     $html = mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8');
     $dom->loadHtml($html, LIBXML_HTML_NOIMPLIED | LIBXML_NONET);
     Log::showLibXMLErrors(libxml_get_errors(), $logger, Dom::$errorCodes, $html);
@@ -81,7 +61,7 @@ class Dom
       $start = strpos($content, $openTag);
       $length = strpos($content, $closeTag) - $start + strlen($closeTag);
       $element = substr($content, $start, $length);
-      $comment = '<replace-'.$replace.' id="replace-'.$replace.'-'.$i.'"></replace-'.$replace.'>';
+      $comment = '<replace-' . $replace . ' id="replace-' . $replace . '-' . $i . '"></replace-' . $replace . '>';
       $replacements[] = [$element, $comment];
 
       $content = substr_replace($content, $comment, $start, strlen($element));
