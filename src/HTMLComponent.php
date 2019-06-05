@@ -123,7 +123,7 @@ abstract class HTMLComponent
           $this->innerHtml .= $HTMLComponentChild->render($renderer, $dom, $factory, $logger);
         }
       } else {
-        $this->innerHtml .= $dom->saveHTML($child);
+        $this->innerHtml .= html_entity_decode ($dom->saveHTML($child));
       }
     }
 
