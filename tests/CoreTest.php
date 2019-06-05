@@ -130,4 +130,12 @@ final class CoreTests extends TestCase
     $result = $this->controller->process("<!DOCTYPE html>" . $link);
     $this->assertEquals($expect_data, $result);
   }
+
+  public function testDataAttr(): void
+  {
+    $dataAtrr = "<wc-button data-trackevent=\"Presupuesto.Solicitud.QuotationListTop\">Button</wc-button>";
+    $result = $this->controller->process("<!DOCTYPE html>" . $dataAtrr);
+    $expect_data = $expect_data = '<!DOCTYPE html>' . "\n" . '<a role="button" data-trackevent="Presupuesto.Solicitud.QuotationListTop">Button</a>' . "\n";
+    $this->assertEquals($expect_data, $result);
+  }
 }

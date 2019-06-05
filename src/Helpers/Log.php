@@ -17,7 +17,7 @@ class Log
   public static  function endLogPerformance($logger)
   {
     $endProcess = round(microtime(true) * 1000) - Log::$startTimeLog;
-    $logger->debug("Time to render the page: {$endProcess}ms");
+    $logger->info("Time to render the page: {$endProcess}ms");
   }
 
   public static function showLibXMLErrors($errors, $logger, $errorCodes, $html) : void

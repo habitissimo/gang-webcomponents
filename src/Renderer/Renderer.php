@@ -7,6 +7,7 @@ use Gang\WebComponents\ComponentLibrary;
 use Gang\WebComponents\Contracts\TemplateRendererInterface;
 use Gang\WebComponents\Helpers\Dom;
 use Gang\WebComponents\HTMLComponent;
+use Gang\WebComponents\Logger\NullLogger;
 use Gang\WebComponents\TemplateFinder;
 
 class Renderer
@@ -36,28 +37,53 @@ class Renderer
     }
 
     $rendered = $this->templateRender->render($fileContent, $context);
-    return $rendered;
+    $this->postRender($rendered, $htmlComponent);
+    return $this->postRender($rendered, $htmlComponent);
+  }
+
+  private function postRender(string $rendered, HTMLComponent $htmlComponent)
+  {
+    if ($htmlComponent->dataAttributes !== null || $htmlComponent->class_name) {
+      $dom = Dom::domFromString($rendered, new NullLogger());
+      $element = $dom->childNodes[1];
+
+      if($htmlComponent->dataAttributes !== null ) {
+        $this->addDataAtributes($element, $htmlComponent);
+      }
+
+      if($htmlComponent->class_name) {
+        $this->addClassAtributesNotYetAdded($htmlComponent->class_name, $element);
+      }
+
+      return  $dom->saveHTML($element);
+    } else {
+      return $rendered;
+    }
   }
 
   public function replaceChildNodeToWebComponetRendered($webcomponent_rendered, $HTMLComponent, $dom, $logger)
   {
     $newDOM = Dom::domFromString($webcomponent_rendered, $logger);
     $dom_element_renderer = $newDOM->childNodes[1];
-
-    $this->addClassAtributesNotYetAdded($HTMLComponent->class_name, $dom_element_renderer);
-
     $parent_node = $HTMLComponent->DOMElement->parentNode;
     $parent_node->replaceChild($dom->importNode($dom_element_renderer, true), $HTMLComponent->DOMElement);
   }
 
 
-  public function addClassAtributesNotYetAdded($className, $element)
+  private function addClassAtributesNotYetAdded($className, $element)
   {
-    if ($className) {
-      $componentClassAttributes = explode(" ", $element->getAttribute("class"));
-      $classNameAtributes = explode(" ", $className);
-      $classAtributesNoAddedYet = array_diff($classNameAtributes, $componentClassAttributes);
-      $element->setAttribute('class', $element->getAttribute("class") . " " . implode(" ", $classAtributesNoAddedYet));
+    $componentClassAttributes = explode(" ", $element->getAttribute("class"));
+    $classNameAtributes = explode(" ", $className);
+    $classAtributesNoAddedYet = array_diff($classNameAtributes, $componentClassAttributes);
+    $element->setAttribute('class', $element->getAttribute("class") . " " . implode(" ", $classAtributesNoAddedYet));
+  }
+
+  private function addDataAtributes($element, $htmlComponent)
+  {
+    foreach ($htmlComponent->dataAttributes->toArray() as $name => $value) {
+      if (empty($element->getAttribute($name))) {
+        $element->setAttribute($name, $value);
+      }
     }
   }
 }
