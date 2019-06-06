@@ -41,24 +41,34 @@ class Renderer
     return $this->postRender($rendered, $htmlComponent);
   }
 
+
+  // These conditions are to avoid the creation of unnecessary DomDocument since they can slow down the rendering.
+   
   private function postRender(string $rendered, HTMLComponent $htmlComponent)
   {
-    if ($htmlComponent->dataAttributes !== null || $htmlComponent->class_name) {
+    $dom = null;
+    $element = null;
+
+    if($htmlComponent->dataAttributes !== null && !empty($htmlComponent->dataAttributes->getData())) {
       $dom = Dom::domFromString($rendered, new NullLogger());
       $element = $dom->childNodes[1];
+    }
 
-      if($htmlComponent->dataAttributes !== null ) {
-        $this->addDataAtributes($element, $htmlComponent);
+    if($htmlComponent->class_name) {
+      if($dom === null && $element === null) {
+        $dom = Dom::domFromString($rendered, new NullLogger());
+        $element = $dom->childNodes[1];
       }
+    }
 
-      if($htmlComponent->class_name) {
-        $this->addClassAtributesNotYetAdded($htmlComponent->class_name, $element);
-      }
-
+    if($dom !== null && $element !== null) {
+      $this->addDataAtributes($element, $htmlComponent);
+      $this->addClassAtributesNotYetAdded($htmlComponent->class_name, $element);
       return  $dom->saveHTML($element);
     } else {
       return $rendered;
     }
+
   }
 
   public function replaceChildNodeToWebComponetRendered($webcomponent_rendered, $HTMLComponent, $dom, $logger)
@@ -72,17 +82,22 @@ class Renderer
 
   private function addClassAtributesNotYetAdded($className, $element)
   {
-    $componentClassAttributes = explode(" ", $element->getAttribute("class"));
-    $classNameAtributes = explode(" ", $className);
-    $classAtributesNoAddedYet = array_diff($classNameAtributes, $componentClassAttributes);
-    $element->setAttribute('class', $element->getAttribute("class") . " " . implode(" ", $classAtributesNoAddedYet));
+    if($className !==  null) {
+      $componentClassAttributes = explode(" ", $element->getAttribute("class"));
+      $classNameAtributes = explode(" ", $className);
+      $classAtributesNoAddedYet = array_diff($classNameAtributes, $componentClassAttributes);
+      $element->setAttribute('class', $element->getAttribute("class") . " " . implode(" ", $classAtributesNoAddedYet));
+    }
   }
 
   private function addDataAtributes($element, $htmlComponent)
   {
-    foreach ($htmlComponent->dataAttributes->toArray() as $name => $value) {
-      if (empty($element->getAttribute($name))) {
-        $element->setAttribute($name, $value);
+    if ($htmlComponent->dataAttributes !== null ) {
+
+      foreach ($htmlComponent->dataAttributes->toArray() as $name => $value) {
+        if (empty($element->getAttribute($name))) {
+          $element->setAttribute($name, $value);
+        }
       }
     }
   }

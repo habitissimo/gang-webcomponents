@@ -26,4 +26,8 @@ class AttributeHolder
   {
     return $this->data;
   }
+
+  public function getData() {
+    return $this->data;
+  }
 }
