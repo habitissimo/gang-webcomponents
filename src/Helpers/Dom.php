@@ -38,7 +38,8 @@ class Dom
     if (Dom::$contentToReplace) {
       foreach (Dom::$contentToReplace as $foo) {
         foreach ($foo as list($script, $comment)) {
-          $content = str_replace($comment, $script, $content);
+          $content = str_replace($comment, $script, $content, $count);
+          $content = str_replace(htmlentities($comment, ENT_NOQUOTES),$script  , $content);
         }
       }
     }

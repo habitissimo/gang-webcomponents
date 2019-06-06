@@ -43,7 +43,7 @@ class Renderer
 
 
   // These conditions are to avoid the creation of unnecessary DomDocument since they can slow down the rendering.
-   
+
   private function postRender(string $rendered, HTMLComponent $htmlComponent)
   {
     $dom = null;
