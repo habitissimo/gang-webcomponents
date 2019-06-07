@@ -25,7 +25,7 @@ class Log
     $writeFile =  false;
     foreach ($errors as $error) {
       if (in_array($error->code,$errorCodes)) {
-        $logger->info($error->message);
+        $logger->debug($error->message);
       }else {
         if (Configuration::$allow_create_error_file && !$writeFile) {
           File::createErrorFile($html);
