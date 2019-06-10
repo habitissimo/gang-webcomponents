@@ -109,12 +109,12 @@ abstract class HTMLComponent
     return strpos($attrName, "data-") === 0;
   }
 
-  public function render($renderer, $dom , $factory, $logger)
+  public function render($renderer, $dom , $factory)
   {
     foreach ($this->DOMElement->childNodes as $child) {
       if (Dom::isWebComponent($child)) {
         $HTMLComponentChild = $factory->create($child);
-        $this->innerHtml .= $HTMLComponentChild->render($renderer, $dom, $factory, $logger);
+        $this->innerHtml .= $HTMLComponentChild->render($renderer, $dom, $factory);
       } else {
         $this->innerHtml .= html_entity_decode ($dom->saveHTML($child));
       }
