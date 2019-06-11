@@ -5,6 +5,8 @@ namespace Gang\WebComponents\Helpers;
 class Dom
 {
   public static $tagsToReplace = ["script", "noscript"];
+  public static $voidElements = ["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta"
+    , "param", "source", "track", "wbr"];
   public static $errorCodes = [801, 23, 513, 68];
   private static $contentToReplace = [];
 
@@ -19,7 +21,7 @@ class Dom
     $dom = new \DOMDocument();
     $html = iconv('UTF-8', 'UTF-8//IGNORE', $html);
     $html = mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8');
-    if($html) {
+    if ($html) {
       $dom->loadHtml($html, LIBXML_HTML_NOIMPLIED | LIBXML_NONET);
     } else {
       $logger->warning(" Empty string supplied as input");

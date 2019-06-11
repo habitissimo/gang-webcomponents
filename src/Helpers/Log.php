@@ -31,7 +31,22 @@ class Log
           File::createErrorFile($html);
           $writeFile = true;
         }
-        $logger->warning(str_replace("\n", "", "libXMLErrorCode: ". $error->code ."; ".$error->message. "; in line: ". $error->line .";"));
+        if($error->code === 76) {
+          $foundVoidElement =  false;
+          foreach (Dom::$voidElements as $voidElement){
+            if (strpos($error->message, $voidElement) !== false) {
+              $foundVoidElement = true;
+              break;
+            }
+          }
+
+          if (!$foundVoidElement){
+            $logger->warning(str_replace("\n", "", "libXMLErrorCode: ". $error->code ."; ".$error->message. "; in line: ". $error->line .";"));
+          }
+
+        } else {
+          $logger->warning(str_replace("\n", "", "libXMLErrorCode: ". $error->code ."; ".$error->message. "; in line: ". $error->line .";"));
+        }
       }
     }
   }
