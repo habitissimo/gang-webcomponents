@@ -108,7 +108,67 @@ Let's see a quick example
     $controller = new WebComponentController($logger);
     $controller->process($html);
   ```
+# Diving deeper into the functionality
 
+As a point of entry to the render of web components, we have the mentioned class WebComponentController.
+
+To render the content, we must call the process function, passing it as parameter the html text. 
+This function before creating the dom tree will replace the ``script`` and ``noscript`` tags since they cause problems with DomDocument. 
+This will simply replace the content of the tags with a tag similar to this ``<replace-script id =0></ replace-script>``.
+In the Dom class that we provide you will have a array to which you can add more confictive tags.
+
+Once this previous step is done we will create the DOM tree by calling ``Dom::domFromString($html, $logger)`` that accepts the text and 
+the logger, this will return us a DomDocument object, to obtain the webcomponents parents, those who do not have any 
+webcomponent parents, we will call the function 
+``$this->getParentWebComponents();``, it will return an array of DomElements that will be the webcomponets to render.
+
+Once the array is obtained, we will enter a while loop where we will not finish rendering until there isn't webcomponents.
+Inside the loop we will create an HTML component through DomElement. For this we must call the class ``HTMLComponentFactory``
+which is responsable for the creation of our HTMLComponents. The ``HTMLComponent`` class has a method that is responsible for
+rendering it self since it has total control of how their children are rendered.
+
+From our loop we will call ``$htmlComponent->render($this->renderer, $this->dom, $this-> factory);`` 
+with all the elements he needs to render.
+
+* **Render:** 
+class that is responsible for transforming the HTMLComponent to the template twig with it's values.
+* **DomDocument:**
+it's used if it's necessary to obtain the html of their children, usually children that are not webcomponent.
+* **HTMLFactory:** 
+if one of their children is a webcomponent then it will create a HTMLComponent, that's why the HTMLComponentFacttory 
+class is necessary
+
+To explain how the render method works, better if we look at the code.
+
+```php
+public function render($renderer, $dom , $factory)
+  {
+    foreach ($this->DOMElement->childNodes as $child) {
+      if (Dom::isWebComponent($child)) {
+        $HTMLComponentChild = $factory->create($child);
+        $this->innerHtml .= $HTMLComponentChild->render($renderer, $dom, $factory);
+      } else {
+        $this->innerHtml .= html_entity_decode ($dom->saveHTML($child));
+      }
+    }
+
+    return $renderer->render($this);
+  }
+```
+
+Let's explain a little in detail. The HTMLComponent class has as an attribute the DomElement that is the same in 
+the DomDocument. So, we are going through their children and if one of them is a webcomponent we proceed to create an 
+HTMLComponent and we will tell the child to renderize, so through the father we can render all of their children with 
+only one iteration.
+
+Once we have gone through all the children, we render to the father and return him.
+
+We return to be in the WebComponentController, once obtained the HTMLComponetn rendering we will replace the old DomElement 
+with the new rendering, for that, we will call replaceChildNodeToWebComponetRendered of the class Renderer.
+We will ask again if there are any WebCoponents in the DomElement, since the templates may have generated other WebCoponents.
+
+Finish the loop while we will call the DomDocument to return the rendered HTML and re-add the previously replaced scripts 
+and noscripts.
 
 # Configuration
 We have a Configuration class with which you can configure the following parameters:

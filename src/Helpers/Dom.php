@@ -19,7 +19,12 @@ class Dom
     $dom = new \DOMDocument();
     $html = iconv('UTF-8', 'UTF-8//IGNORE', $html);
     $html = mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8');
-    $dom->loadHtml($html, LIBXML_HTML_NOIMPLIED | LIBXML_NONET);
+    if($html) {
+      $dom->loadHtml($html, LIBXML_HTML_NOIMPLIED | LIBXML_NONET);
+    } else {
+      $logger->warning(" Empty string supplied as input");
+      $dom->loadHtml(" ", LIBXML_HTML_NOIMPLIED | LIBXML_NONET);
+    }
     Log::showLibXMLErrors(libxml_get_errors(), $logger, Dom::$errorCodes, $html);
     libxml_clear_errors();
     return $dom;
