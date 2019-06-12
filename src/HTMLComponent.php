@@ -116,7 +116,7 @@ abstract class HTMLComponent
         $HTMLComponentChild = $factory->create($child);
         $this->innerHtml .= $HTMLComponentChild->render($renderer, $dom, $factory);
       } else {
-        $this->innerHtml .= html_entity_decode ($dom->saveHTML($child));
+        $this->innerHtml .= html_entity_decode($dom->saveHTML($child));
       }
     }
 
